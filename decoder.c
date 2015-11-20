@@ -7,8 +7,7 @@
 //
 //  Nice features to add:
 //  change evaluation to math
-#include <features.h>
-#include <stdio.h>
+#include <stdio.h>          //fileno()
 #include <string.h>         // memset()
 #include <stdlib.h>
 #include <sys/types.h>
@@ -17,6 +16,118 @@
 #include <unistd.h>
 // Might not need these
 #include <stdint.h>
+
+// PCAP Global Header - 24B
+struct PGBL_hdr {
+    unsigned char glbl_magic_num[4];
+                // if 0xa1b2c3d4, big Endian
+    unsigned char glbl_pcap_maj_ver[2];
+                // Assume 2
+    unsigned char glbl_pcap_min_ver[2];
+                // assume .4
+    unsigned char glbl_timez_offset[4];
+    unsigned char glbl_time_accuracy[4];
+    unsigned char glbl_max_length[4];
+                // Max. Len. of pcap capture dev ( assume 65,523)
+    unsigned char glbl_linklay_type[4];
+                // link-layer head type (ethernet)
+}global_pcap_head;
+
+// PCAP Packet Header - 16B
+struct PPACK_hdr {
+    unsigned char packet_timestamp[4];
+    unsigned char packet_microseconds[4];
+    unsigned char packet_saved_size[4];
+                // size in bytes in file
+    unsigned char packet_live_size[4];
+                // data-stream size when captured
+}packet_head;
+
+// Ethernet Header - 14B
+struct ETH_frame {
+    unsigned char eth_dest[6];
+    unsigned char eth_src[6];
+    unsigned char eth_butt[2];
+                // 08 00 = IPv4
+}eth_frame;
+
+struct IP_hdr {
+    unsigned char ip_hat[2];
+    unsigned char ip_length[2];
+                // MAXIMUM size 1500B
+    unsigned char ip_id[2];
+    unsigned char ip_flags[1];
+    unsigned char ip_offset[1];
+    unsigned char ip_ttl[1];
+    unsigned char ip_protocol[1];
+                // 11 = UDP
+    unsigned char ip_chksum[2];
+    unsigned char ip_srce_pt[2];
+    unsigned char ip_dest_pt[2];
+}ip_frame;
+
+// UDP Header
+struct UDP_frame {
+    unsigned char udp_srce_pt[2];
+    unsigned char udp_dest_pt[2];
+    unsigned char udp_length[2];
+    unsigned char udp_chksum[2];
+}udp_frame;
+
+// Meditrik header. - Maximum size of med_header is 24B
+struct MED_hdr {
+// Double-check after conversion
+    unsigned int med_version:4;
+// Double-check after conversion
+    unsigned int med_squence:9;
+// Double-check after conversion
+    unsigned int med_type:3;
+    unsigned char med_length[4];
+    unsigned char med_srce_dev[8];
+    unsigned char med_dest_dev[8];
+}med_head;
+
+// Meditrik Variable Portion - Will be one of the following
+struct MED_payload {
+    
+    /// 0 - Device Status - 28B
+    struct MED_stat{
+        unsigned char med_stat_batt[16];
+                // IEEE 754 double-precision decimal (binary64)
+        unsigned char med_stat_gluc[4];         // 0-65000
+        unsigned char med_stat_caps[4];         // 0-65000
+        unsigned char med_stat_omor[4];         // 0-65000
+    }med_stat;
+    
+    /// 1 - Command Instruction - 8B
+    struct MED_cmd{
+        unsigned char cmd_out[4];
+            // Sends command to device
+            /// GET: STATUS(0), GPS(2)
+            /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
+            /// REPEAT(7)
+            /// RESERVED(4, 6)
+        unsigned char cmd_param[4];
+            // Parameters for given SET Commands
+    }med_cmd;
+
+    /// 2 - GPS Data - 40B
+    struct MED_gps{
+        unsigned char longi[16];
+            // binary64 - degrees, can be negative
+        unsigned char latit[16];
+            // binary64 - degrees, can be negative
+        unsigned char altit[8];
+            // binary32
+    }med_gps;
+    
+    /// 3 - Message
+    struct MED_mess{
+// INCORRECT. Must be med_length - 32 (for the med_header)
+        unsigned char message;
+            // NOT NULL-terminated
+    }med_message;
+};
 
 int main(void){
     /*
@@ -60,91 +171,17 @@ int main(void){
     
     prnt_head(buff, (int)pcap_size);                // Print whole PCAP
     printf("\n\n");
-
-/*
-//// Changes per-capture ////
+    
+    
+    
+    
+/* EXAMPLE BIT-Masking for Flags
  
-// PCAP Global Header
-    unsigned char glbl_magic_num[4];            // if 0xa1b2c3d4, big Endian, other: little
-    unsigned char glbl_pcap_maj_ver[2];         // Assume 2
-    unsigned char glbl_pcap_min_ver[2];         // assume .4
-    unsigned char glbl_timez_offset[4];
-    unsigned char glbl_time_accuracy[4];
-    unsigned char glbl_max_length[4];           // Maximum length of capture device (likely 65,523)
-    unsigned char glbl_max_length[4];           // link-layer header type (likely ethernet)
- 
-//// Changes per-packet ////
-
-    // PCAP Packet Header
-    unsigned char packet_timestamp[4];
-    unsigned char packet_microseconds[4];
-    unsigned char packet_saved_size[4];         // size in bytes in file
-    unsigned char packet_live_size[4];          // data-stream size when captured
- 
-    /// Networking ///
-    // Ethernet Header - 64 bytes
-    unsigned char eth_dest[6];
-    unsigned char eth_src[6];
-    unsigned char eth_butt[2];                  // 08 00 = IPv4
- 
-    // IP Header
-    unsigned char ip_hat[2];
-    unsigned char ip_length[2];                 // MAXIMUM size 1500B
-    unsigned char ip_id[2];
-    unsigned char ip_flags[1];
-    unsigned char ip_offset[1];
-    unsigned char ip_ttl[1];
-    unsigned char ip_protocol[1];               // 11 = UDP
-    unsigned char ip_chksum[2];
-    unsigned char ip_srce_pt[2];
-    unsigned char ip_dest_pt[2];
- 
-    // UDP Header
-    unsigned char udp_srce_pt[2];
-    unsigned char udp_dest_pt[2];
-    unsigned char udp_length[2];
-    unsigned char udp_chksum[2];
- 
-    /// Meditrik ///
- 
-    // Meditrik header. - Maximum size of med_header is 24B
-// Double-check after conversion
-    unsigned int med_version:4;
-// Double-check after conversion
-    unsigned char med_squence:9;
-// Double-check after conversion
-    unsigned char med_type:3;
-    unsigned char med_length[4];
-    unsigned char med_srce_dev[8];
-    unsigned char med_dest_dev[8];
- 
-    // Meditrik Variable Portion - Will be one of the following
- 
-    /// 0 - Device Status - 28B
-    unsigned char med_stat_batt[16];        // IEEE 754 double-precision decimal (binary64)
-    unsigned char med_stat_gluc[4];         // 0-65000
-    unsigned char med_stat_caps[4];         // 0-65000
-    unsigned char med_stat_omor[4];         // 0-65000
- 
-    /// 1 - Command Instruction - 8B
-
-    unsigned char med_cmnd_cmnd[4];         // Sends command to device
-        /// GET: STATUS(0), GPS(2)
-        /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
-        /// REPEAT(7)
-        /// RESERVED(4, 6)
-    unsigned char med_cmnd_param[4];        // Value for SET Commands
-
-    /// 2 - GPS Data - 40B
-    unsigned char med_gps_longitude[16];    // binary64 - degrees, can be negative
-    unsigned char med_gps_latitude[16];     // binary64 - degrees, can be negative
-    unsigned char med_gps_altitude[8];      // binary32
-
-    /// 3 - Message
-// INCORRECT. Must be med_length - 32 (for the med_header)
-    unsigned char med_dest_payload;         // NOT NULL-terminated
- 
-*/
+    char flags = 0xFB; // 11111011b char mask = 0x01; // 00000001b
+    if(flags & mask){
+        printf("Flag 1 set!\n");
+    }
+ */
 
     
 
