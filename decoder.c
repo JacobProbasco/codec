@@ -74,60 +74,59 @@ struct UDP_frame {
     unsigned char udp_chksum[2];
 }udp_frame;
 
-// Meditrik header. - Maximum size of med_header is 24B
-struct MED_hdr {
-// Double-check after conversion
-    unsigned int med_version:4;
-// Double-check after conversion
-    unsigned int med_squence:9;
-// Double-check after conversion
-    unsigned int med_type:3;
-    unsigned char med_length[4];
-    unsigned char med_srce_dev[8];
-    unsigned char med_dest_dev[8];
-}med_head;
-
 // Meditrik Variable Portion - Will be one of the following
-struct MED_payload {
+struct MED_frame {
+    // Meditrik header. - Maximum size of med_header is 24B
+    struct MED_hdr {
+        // Double-check after conversion
+        unsigned int med_version:4;
+        // Double-check after conversion
+        unsigned int med_squence:9;
+        // Double-check after conversion
+        unsigned int med_type:3;
+        unsigned char med_length[4];
+        unsigned char med_srce_dev[8];
+        unsigned char med_dest_dev[8];
+    }med_head;
     
-    /// 0 - Device Status - 28B
-    struct MED_stat{
-        unsigned char med_stat_batt[16];
-                // IEEE 754 double-precision decimal (binary64)
-        unsigned char med_stat_gluc[4];         // 0-65000
-        unsigned char med_stat_caps[4];         // 0-65000
-        unsigned char med_stat_omor[4];         // 0-65000
-    }med_stat;
-    
-    /// 1 - Command Instruction - 8B
-    struct MED_cmd{
-        unsigned char cmd_out[4];
+    struct MED_payload {
+        /// 0 - Device Status - 28B
+        struct MED_stat{
+            unsigned char med_stat_batt[16];
+            // IEEE 754 double-precision decimal (binary64)
+            unsigned char med_stat_gluc[4];         // 0-65000
+            unsigned char med_stat_caps[4];         // 0-65000
+            unsigned char med_stat_omor[4];         // 0-65000
+        }med_stat;
+        
+        /// 1 - Command Instruction - 8B
+        struct MED_cmd{
+            unsigned char cmd_out[4];
             // Sends command to device
             /// GET: STATUS(0), GPS(2)
             /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
             /// REPEAT(7)
             /// RESERVED(4, 6)
-        unsigned char cmd_param[4];
+            unsigned char cmd_param[4];
             // Parameters for given SET Commands
-    }med_cmd;
-
-    /// 2 - GPS Data - 40B
-    struct MED_gps{
-        unsigned char longi[16];
+        }med_cmd;
+        
+        /// 2 - GPS Data - 40B
+        struct MED_gps{
+            unsigned char longi[16];
             // binary64 - degrees, can be negative
-        unsigned char latit[16];
+            unsigned char latit[16];
             // binary64 - degrees, can be negative
-        unsigned char altit[8];
+            unsigned char altit[8];
             // binary32
-    }med_gps;
-    
-    /// 3 - Message
-    struct MED_mess{
-// INCORRECT. Must be med_length - 32 (for the med_header)
+        }med_gps;
+        
+        /// 3 - Message
+// INCORRECT. Must be med_length minus 32 (for the med_header)
         unsigned char message;
             // NOT NULL-terminated
-    }med_message;
-};
+    }med_payload;
+}med_frame;
 
 int main(void){
     /*
