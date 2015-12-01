@@ -6,9 +6,10 @@
 //  Copyright © 2015 jprobasco. All rights reserved.
 //
 //  Nice features to add:
-
+#define _BSD_SOURCE
 #include <stdio.h>          //fileno()
 #include <string.h>         // memset()
+#include "codec.h"         // little<->big endian functions
 #include <stdlib.h>
 #include <sys/types.h>
 // Find alternate solution to this
@@ -93,38 +94,35 @@ struct MED_hdr {
 // Meditrik Variable Portion - Will be one of the following
 
     /// 0 - Device Status - 28B
-    struct status{
-        unsigned char batt[16];
-                // IEEE 754 double-precision decimal (binary64)
-        unsigned char gluc[4];         // 0-65000
-        unsigned char caps[4];         // 0-65000
-        unsigned char omor[4];         // 0-65000
-    }status;
+struct status{
+    uint64_t batt[16];
+            // IEEE 754 double-precision decimal (binary64)
+    uint16_t gluc[4];         // 0-65000
+    uint16_t caps[4];         // 0-65000
+    uint16_t omor[4];         // 0-65000
+}status;
 
-    /// 1 - Command Instruction - 8B
-    struct cmd{
-        unsigned char out[4];
-            // Sends command to device
-            /// GET: STATUS(0), GPS(2)
-            /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
-            /// REPEAT(7)
-            /// RESERVED(4, 6)
-        unsigned char param[4];
-            // Parameters for given SET Commands
-    }cmd;
+/// 1 - Command Instruction - 8B
+struct cmd{
+    unsigned char out[4];
+        // Sends command to device
+        /// GET: STATUS(0), GPS(2)
+        /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
+        /// REPEAT(7)
+        /// RESERVED(4, 6)
+    unsigned char param[4];
+        // Parameters for given SET Commands
+}cmd;
 
-    /// 2 - GPS Data - 40B
-    struct gps{
-        unsigned char longi[16];
-            // binary64 - degrees, can be negative
-        unsigned char latit[16];
-            // binary64 - degrees, can be negative
-        unsigned char altit[8];
-            // binary32
-    }gps;
-
-    /// 3 - Message
-// INCORRECT. Must be med_length minus 32 (for the med_header)
+/// 2 - GPS Data - 40B
+struct gps{
+    unsigned char longi[16];
+        // binary64 - degrees, can be negative
+    unsigned char latit[16];
+        // binary64 - degrees, can be negative
+    unsigned char altit[8];
+        // binary32
+}gps;
 
 int main(void){
     /*
@@ -171,13 +169,13 @@ int main(void){
     fread(&med_head, sizeof(med_head), 1, pcap);
     
     // Network to host on packet
-    med_head.nthosts = ntohs(med_head.nthosts);
-    med_head.length = ntohs(med_head.length);
-    med_head.from = ntohl(med_head.from);
-    med_head.to = ntohl(med_head.to);
+    med_head.nthosts = be16toh(med_head.nthosts);
+    med_head.length = be16toh(med_head.length);
+    med_head.from = be32toh(med_head.from);
+    med_head.to = be32toh(med_head.to);
     
-    printf("Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
-    printf("Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
+    printf("DEBUG: Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
+    printf("DEBUG: Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
     
     printf("Version: %02X or %u\n", med_head.version, med_head.version);
     printf("Sequence: %02X or %u\n", med_head.squence, med_head.squence);
@@ -186,22 +184,25 @@ int main(void){
     
 // Device Status Packets
     if (med_head.type == 0){
-        printf("Device Status Type\n");
+        printf("DEBUG: Device Status Type\n");
+        //be64toh function might be useful
     }
 // Command Instruction Packets
     if (med_head.type == 1){
-        printf("Command Instruction Type\n");
+        printf("DEBUG: Command Instruction Type\n");
     }
 // GPS Data Packets
     if (med_head.type == 2){
-        printf("GPS Data Type\n");
+        printf("DEBUG: GPS Data Type\n");
     }
 // Message Packets
     if (med_head.type == 3){
-        printf("Message Type\n");
-        char message;
-        fread(&message, med_head.length-12, 1, pcap);
-        printf("Message: %s \n", &message);
+        printf("DEBUG: Message Type\n");
+        char *message;
+        message = (char *) realloc(message, med_head.length-12);
+        fread(message, med_head.length-12, 1, pcap);
+        printf("Message: %s \n", message);
+        free(message);
     }
     
 /* DEBUG
