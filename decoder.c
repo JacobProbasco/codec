@@ -164,7 +164,7 @@ int main(void){
     int prnt_head(unsigned char *buffer, int buff_size);    // For printing the data to screen
 
     FILE *pcap;
-    pcap = fopen("/usr/local/share/codec/gps.pcap", "rb");  // Open file as a data stream
+    pcap = fopen("/usr/local/share/codec/status.pcap", "rb");  // Open file as a data stream
 
     int pcap_fileno;                 				// Locate file number.
     pcap_fileno = fileno(pcap);                 	// Locate file number.
@@ -196,7 +196,7 @@ int main(void){
     if (med_head.type == 0){
 //      printf("DEBUG: Device Status Type\n");
         fread(&status.batt, sizeof(status.batt), 1, pcap);
-        printf("Battery: is %.2f\n", (status.battery * 100));
+        printf("Battery: is %.2f%%\n", (status.battery * 100));
         
         fread(&status.gluc, sizeof(status.gluc), 1, pcap);
         status.gluc = be16toh(status.gluc);
