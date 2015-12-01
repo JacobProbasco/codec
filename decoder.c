@@ -19,72 +19,75 @@
 
 // PCAP Global Header - 24B
 struct PGBL_hdr {
-    unsigned char glbl_magic_num[4];
+    unsigned char magic_num[4];
                 // if 0xa1b2c3d4, big Endian
-    unsigned char glbl_pcap_maj_ver[2];
+    unsigned char maj_ver[2];
                 // Assume 2
-    unsigned char glbl_pcap_min_ver[2];
+    unsigned char min_ver[2];
                 // assume .4
-    unsigned char glbl_timez_offset[4];
-    unsigned char glbl_time_accuracy[4];
-    unsigned char glbl_max_length[4];
+    unsigned char timez_offset[4];
+    unsigned char time_accuracy[4];
+    unsigned char max_length[4];
                 // Max. Len. of pcap capture dev ( assume 65,523)
-    unsigned char glbl_linklay_type[4];
+    unsigned char linklay_type[4];
                 // link-layer head type (ethernet)
 }global_pcap_head;
 
 // PCAP Packet Header - 16B
 struct PPACK_hdr {
-    unsigned char packet_timestamp[4];
-    unsigned char packet_microseconds[4];
-    unsigned char packet_saved_size[4];
+    unsigned char timestamp[4];
+    unsigned char microseconds[4];
+    unsigned char saved_size[4];
                 // size in bytes in file
-    unsigned char packet_live_size[4];
+    unsigned char live_size[4];
                 // data-stream size when captured
 }packet_head;
 
 // Ethernet Header - 14B
 struct ETH_frame {
-    unsigned char eth_dest[6];
-    unsigned char eth_src[6];
-    unsigned char eth_butt[2];
+    unsigned char dest[6];
+    unsigned char src[6];
+    unsigned char butt[2];
                 // 08 00 = IPv4
 }eth_frame;
 
 struct IP_hdr {
-    unsigned char ip_hat[2];
-    unsigned char ip_length[2];
+    unsigned char hat[2];
+    unsigned char length[2];
                 // MAXIMUM size 1500B
-    unsigned char ip_id[2];
-    unsigned char ip_flags[1];
-    unsigned char ip_offset[1];
-    unsigned char ip_ttl[1];
-    unsigned char ip_protocol[1];
+    unsigned char id[2];
+    unsigned char flags[1];
+    unsigned char offset[1];
+    unsigned char ttl[1];
+    unsigned char protocol[1];
                 // 11 = UDP
-    unsigned char ip_chksum[2];
-    unsigned char ip_srce_ip[4];
-    unsigned char ip_dest_ip[4];
+    unsigned char chksum[2];
+    unsigned char srce_ip[4];
+    unsigned char dest_ip[4];
 }ip_frame;
 
 // UDP Header
 struct UDP_frame {
-    unsigned char udp_srce_pt[2];
-    unsigned char udp_dest_pt[2];
-    unsigned char udp_length[2];
-    unsigned char udp_chksum[2];
+    unsigned char srce_pt[2];
+    unsigned char dest_pt[2];
+    unsigned char length[2];
+    unsigned char chksum[2];
 }udp_frame;
 
 // Meditrik header. - Maximum size of med_header is 24B
 struct MED_hdr {
-// Double-check after conversion
-    unsigned int med_version:4;
-// Double-check after conversion
-    unsigned int med_squence:9;
-// Double-check after conversion
-    unsigned int med_type:3;
-    unsigned int med_length:16;
-    unsigned int med_srce_dev:32;
-    unsigned int med_dest_dev:32;
+    // Account for order of bits in struct.
+    union {
+        struct{
+            uint16_t type:3;
+            uint16_t squence:9;
+            uint16_t version:4;
+        };
+        uint16_t nthosts;
+    };
+    uint16_t length:16;
+    uint32_t from:32;
+    uint32_t to:32;
 }med_head;
 
 // Meditrik Variable Portion - Will be one of the following
@@ -92,22 +95,22 @@ struct MED_payload {
 
     /// 0 - Device Status - 28B
     struct MED_stat{
-        unsigned char med_stat_batt[16];
+        unsigned char batt[16];
                 // IEEE 754 double-precision decimal (binary64)
-        unsigned char med_stat_gluc[4];         // 0-65000
-        unsigned char med_stat_caps[4];         // 0-65000
-        unsigned char med_stat_omor[4];         // 0-65000
+        unsigned char gluc[4];         // 0-65000
+        unsigned char caps[4];         // 0-65000
+        unsigned char omor[4];         // 0-65000
     }med_stat;
 
     /// 1 - Command Instruction - 8B
     struct MED_cmd{
-        unsigned char cmd_out[4];
+        unsigned char out[4];
             // Sends command to device
             /// GET: STATUS(0), GPS(2)
             /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
             /// REPEAT(7)
             /// RESERVED(4, 6)
-        unsigned char cmd_param[4];
+        unsigned char param[4];
             // Parameters for given SET Commands
     }med_cmd;
 
@@ -124,7 +127,7 @@ struct MED_payload {
     /// 3 - Message
     struct MED_mess{
 // INCORRECT. Must be med_length - 32 (for the med_header)
-        unsigned char message;
+        unsigned char text;
             // NOT NULL-terminated
     }med_message;
 };
@@ -172,6 +175,12 @@ int main(void){
     fread(&ip_frame, sizeof(ip_frame), 1, pcap);	
     fread(&udp_frame, sizeof(udp_frame), 1, pcap);
     fread(&med_head, sizeof(med_head), 1, pcap);
+    
+    // Network to host on packet
+    med_head.nthosts = ntohs(med_head.nthosts);
+    med_head.length = ntohs(med_head.length);
+    med_head.from = ntohl(med_head.from);
+    med_head.to = ntohl(med_head.to);
 
     printf("Print Global PCAP Header\n");
 	prnt_head((unsigned char *)&global_pcap_head, sizeof(global_pcap_head));                // Print global Header
@@ -189,10 +198,17 @@ int main(void){
 	prnt_head((unsigned char *)&udp_frame, sizeof(udp_frame));                // Print udp frame
 
     printf("Print Meditrik Header\n");
+    prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print Meditrik Header
+
+    printf("Meditrick Version is: %02X or %u\n\n", med_head.version, med_head.version);
+    printf("Meditrick Sequence ID is: %02X or %u\n\n", med_head.squence, med_head.squence);
+    printf("Meditrick Type is: %02X or %u\n\n", med_head.type, med_head.type);
+    printf("Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
+    printf("Meditrick From is: %02X or %u\n\n", med_head.from, med_head.from);
+    printf("Meditrick To is: %02X or %u\n\n", med_head.to, med_head.to);
+    
     prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print udp frame
 
-    printf("Print Magic_number\n");
-		printf("\n%02x\n",(unsigned int)*global_pcap_head.glbl_magic_num);
     printf("\n\n");
 
 
@@ -216,17 +232,17 @@ int main(void){
 }
 
 int prnt_head(unsigned char* buffer, int buff_size){
-    printf("\n\n");
-
     int count = 0;
 
     for(int i = 0; i < buff_size; i++){
         printf("%02X ",buffer[i]);
-        if (count == 15){
+/*        if (count == 15){
             printf("\n");
             count = -1 ;
         }
+ */
         count++;
     }
+    printf("\n\n");
     return 0;
 }
