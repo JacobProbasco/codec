@@ -107,13 +107,13 @@ struct status{
 
 /// 1 - Command Instruction - 8B
 struct cmd{
-    unsigned char out[4];
+    uint16_t out;
         // Sends command to device
         /// GET: STATUS(0), GPS(2)
         /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
         /// REPEAT(7)
         /// RESERVED(4, 6)
-    unsigned char param[4];
+    uint16_t param;
         // Parameters for given SET Commands
 }cmd;
 
@@ -154,7 +154,7 @@ int main(void){
     int prnt_head(unsigned char *buffer, int buff_size);    // For printing the data to screen
 
     FILE *pcap;
-    pcap = fopen("/usr/local/share/codec/status.pcap", "rb");  // Open file as a data stream
+    pcap = fopen("/usr/local/share/codec/command_glucose.pcap", "rb");  // Open file as a data stream
 
     int pcap_fileno;                 				// Locate file number.
     pcap_fileno = fileno(pcap);                 	// Locate file number.
@@ -202,12 +202,18 @@ int main(void){
         fread(&status.omor, sizeof(status.omor), 1, pcap);
         status.omor = be16toh(status.omor);
         printf("Omorfine: %02X or %u\n", status.omor, status.omor);
-        
 
     }
 // Command Instruction Packets
     if (med_head.type == 1){
         printf("DEBUG: Command Instruction Type\n");
+        fread(&cmd.out, sizeof(cmd.out), 1, pcap);
+        cmd.out = be16toh(cmd.out);
+        printf("Cmd Numb: %02X or %u\n", cmd.out, cmd.out);
+        
+        fread(&cmd.param, sizeof(cmd.param), 1, pcap);
+        cmd.param = be16toh(cmd.param);
+        printf("Param: %02X or %u\n", cmd.param, cmd.param);
     }
 // GPS Data Packets
     if (med_head.type == 2){
