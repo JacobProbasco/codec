@@ -181,37 +181,34 @@ int main(void){
     med_head.length = ntohs(med_head.length);
     med_head.from = ntohl(med_head.from);
     med_head.to = ntohl(med_head.to);
-
+    
+/* DEBUG
     printf("Print Global PCAP Header\n");
 	prnt_head((unsigned char *)&global_pcap_head, sizeof(global_pcap_head));                // Print global Header
-	
     printf("Print packet header\n");
 	prnt_head((unsigned char *)&packet_head, sizeof(packet_head));                // Print packet header
-
 	printf("Print ethernet frame\n");
 	prnt_head((unsigned char *)&eth_frame, sizeof(eth_frame));		// Print Ethernet frame
-	
     printf("Print IP Frame\n");
 	prnt_head((unsigned char *)&ip_frame, sizeof(ip_frame));                // Print ip frame
-	
     printf("Print UDP Frame\n");
 	prnt_head((unsigned char *)&udp_frame, sizeof(udp_frame));                // Print udp frame
-
+*/
     printf("Print Meditrik Header\n");
     prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print Meditrik Header
-
-    printf("Meditrick Version is: %02X or %u\n\n", med_head.version, med_head.version);
-    printf("Meditrick Sequence ID is: %02X or %u\n\n", med_head.squence, med_head.squence);
-    printf("Meditrick Type is: %02X or %u\n\n", med_head.type, med_head.type);
-    printf("Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
-    printf("Meditrick From is: %02X or %u\n\n", med_head.from, med_head.from);
-    printf("Meditrick To is: %02X or %u\n\n", med_head.to, med_head.to);
     
-    prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print udp frame
-
+    printf("Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
+    printf("Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
+    
+    printf("Version: %02X or %u\n", med_head.version, med_head.version);
+    printf("Sequence: %02X or %u\n", med_head.squence, med_head.squence);
+    printf("From: %02X or %u\n", med_head.from, med_head.from);
+    printf("To: %02X or %u\n", med_head.to, med_head.to);
+    
     printf("\n\n");
 
-
+    printf("Print Meditrik Payload\n");
+    prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print Meditrik Header
 
 
 /* EXAMPLE BIT-Masking for Flags
