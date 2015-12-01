@@ -171,6 +171,7 @@ int main(void){
 	fread(&eth_frame, sizeof(eth_frame), 1, pcap);
     fread(&ip_frame, sizeof(ip_frame), 1, pcap);	
     fread(&udp_frame, sizeof(udp_frame), 1, pcap);
+    fread(&med_head, sizeof(med_head), 1, pcap);
 
     printf("Print Global PCAP Header\n");
 	prnt_head((unsigned char *)&global_pcap_head, sizeof(global_pcap_head));                // Print global Header
@@ -187,6 +188,8 @@ int main(void){
     printf("Print UDP Frame\n");
 	prnt_head((unsigned char *)&udp_frame, sizeof(udp_frame));                // Print udp frame
 
+    printf("Print Meditrik Header\n");
+    prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print udp frame
 
     printf("Print Magic_number\n");
 		printf("\n%02x\n",(unsigned int)*global_pcap_head.glbl_magic_num);
