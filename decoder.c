@@ -164,7 +164,7 @@ int main(void){
     int prnt_head(unsigned char *buffer, int buff_size);    // For printing the data to screen
 
     FILE *pcap;
-    pcap = fopen("/usr/local/share/codec/status.pcap", "rb");  // Open file as a data stream
+    pcap = fopen("/usr/local/share/codec/command_glucose.pcap", "rb");  // Open file as a data stream
 
     int pcap_fileno;                 				// Locate file number.
     pcap_fileno = fileno(pcap);                 	// Locate file number.
@@ -215,13 +215,45 @@ int main(void){
 // Command Instruction Packets
     if (med_head.type == 1){
 //      printf("DEBUG: Command Instruction Type\n");
+        
         fread(&cmd.out, sizeof(cmd.out), 1, pcap);
         cmd.out = be16toh(cmd.out);
-        printf("Cmd Numb: %u\n", cmd.out);
         
-        fread(&cmd.param, sizeof(cmd.param), 1, pcap);
-        cmd.param = be16toh(cmd.param);
-        printf("Param: %u\n", cmd.param);
+    /// GET Commands
+        if (cmd.out == 0){
+            printf("GET_STATUS(0)\n");
+        }
+        if (cmd.out == 2){
+            printf("GET_GPS(2)\n");
+        }
+    /// SET Commands
+        if (cmd.out == 1){
+            printf("SET_GLUCOSE(1) to:\n");
+            fread(&cmd.param, sizeof(cmd.param), 1, pcap);
+            cmd.param = be16toh(cmd.param);
+            printf("%u\n", cmd.param);
+        }
+        if (cmd.out == 3){
+            printf("SET_CAPSAICIN(3) to:\n");
+            fread(&cmd.param, sizeof(cmd.param), 1, pcap);
+            cmd.param = be16toh(cmd.param);
+            printf("%u\n", cmd.param);
+        }
+        if (cmd.out == 5){
+            printf("SET_OMORFINE(5) to:\n");
+            fread(&cmd.param, sizeof(cmd.param), 1, pcap);
+            cmd.param = be16toh(cmd.param);
+            printf("%u\n", cmd.param);
+        }
+    /// Repeat
+        if (cmd.out == 7){
+            printf("REPEAT(7)");
+        }
+        
+        if ((cmd.out == 4) || (cmd.out == 6)){
+            printf("Error: Reserved command used. Ignoring.");
+        }
+        
     }
     
 // GPS Data Packets
