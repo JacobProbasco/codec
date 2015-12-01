@@ -182,6 +182,28 @@ int main(void){
     med_head.from = ntohl(med_head.from);
     med_head.to = ntohl(med_head.to);
     
+    printf("Version: %02X or %u\n", med_head.version, med_head.version);
+    printf("Sequence: %02X or %u\n", med_head.squence, med_head.squence);
+    printf("From: %02X or %u\n", med_head.from, med_head.from);
+    printf("To: %02X or %u\n", med_head.to, med_head.to);
+    
+// Device Status Packets
+    if (med_head.type == 0){
+        printf("Device Status Type\n");
+    }
+// Command Instruction Packets
+    if (med_head.type == 1){
+        printf("Command Instruction Type\n");
+    }
+// GPS Data Packets
+    if (med_head.type == 2){
+        printf("GPS Data Type\n");
+    }
+// Message Packets
+    if (med_head.type == 3){
+        printf("Message Type\n");
+    }
+    
 /* DEBUG
     printf("Print Global PCAP Header\n");
 	prnt_head((unsigned char *)&global_pcap_head, sizeof(global_pcap_head));                // Print global Header
@@ -200,10 +222,7 @@ int main(void){
     printf("Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
     printf("Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
     
-    printf("Version: %02X or %u\n", med_head.version, med_head.version);
-    printf("Sequence: %02X or %u\n", med_head.squence, med_head.squence);
-    printf("From: %02X or %u\n", med_head.from, med_head.from);
-    printf("To: %02X or %u\n", med_head.to, med_head.to);
+
     
     printf("\n\n");
 
