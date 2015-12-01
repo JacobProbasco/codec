@@ -5,7 +5,8 @@
 //  Created by Jacob Probasco on 12/01/15.
 //  Copyright © 2015 jprobasco. All rights reserved.
 //
-//  Nice features to add:
+//  Thank God that I am not my code.
+
 #define _BSD_SOURCE
 #include <stdio.h>          //fileno()
 #include <string.h>         // memset()
@@ -170,9 +171,6 @@ int main(void){
     fstat(pcap_fileno, &pcap_stat);                 // Load File's stats into pcap_stat.
     pcap_size = pcap_stat.st_size;                  // Set pcap_size to the size of the file.
 
-    unsigned char buff[pcap_size];                  // Create buffer for a file of that size.
-    memset(buff, 0, pcap_size);
-
     fread(&global_pcap_head, sizeof(global_pcap_head), 1, pcap);
     fread(&packet_head, sizeof(packet_head), 1, pcap);
 	fread(&eth_frame, sizeof(eth_frame), 1, pcap);
@@ -186,49 +184,49 @@ int main(void){
     med_head.from = be32toh(med_head.from);
     med_head.to = be32toh(med_head.to);
     
-    printf("DEBUG: Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
-    printf("DEBUG: Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
+//    printf("DEBUG: Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
+//    printf("DEBUG: Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
     
-    printf("Version: %02X or %u\n", med_head.version, med_head.version);
-    printf("Sequence: %02X or %u\n", med_head.squence, med_head.squence);
-    printf("From: %02X or %u\n", med_head.from, med_head.from);
-    printf("To: %02X or %u\n", med_head.to, med_head.to);
+    printf("Version: %u\n", med_head.version);
+    printf("Sequence: %u\n", med_head.squence);
+    printf("From: %u\n", med_head.from);
+    printf("To: %u\n", med_head.to);
     
 // Device Status Packets
     if (med_head.type == 0){
-        printf("DEBUG: Device Status Type\n");
+//      printf("DEBUG: Device Status Type\n");
         fread(&status.batt, sizeof(status.batt), 1, pcap);
         printf("Battery: is %.2f\n", (status.battery * 100));
         
         fread(&status.gluc, sizeof(status.gluc), 1, pcap);
         status.gluc = be16toh(status.gluc);
-        printf("Glucose: %02X or %u\n", status.gluc, status.gluc);
+        printf("Glucose: %u\n", status.gluc);
         
         fread(&status.caps, sizeof(status.caps), 1, pcap);
         status.caps = be16toh(status.caps);
-        printf("Capsacian: %02X or %u\n", status.caps, status.caps);
+        printf("Capsacian: %u\n", status.caps);
         
         fread(&status.omor, sizeof(status.omor), 1, pcap);
         status.omor = be16toh(status.omor);
-        printf("Omorfine: %02X or %u\n", status.omor, status.omor);
+        printf("Omorfine: %u\n", status.omor);
 
     }
     
 // Command Instruction Packets
     if (med_head.type == 1){
-        printf("DEBUG: Command Instruction Type\n");
+//      printf("DEBUG: Command Instruction Type\n");
         fread(&cmd.out, sizeof(cmd.out), 1, pcap);
         cmd.out = be16toh(cmd.out);
-        printf("Cmd Numb: %02X or %u\n", cmd.out, cmd.out);
+        printf("Cmd Numb: %u\n", cmd.out);
         
         fread(&cmd.param, sizeof(cmd.param), 1, pcap);
         cmd.param = be16toh(cmd.param);
-        printf("Param: %02X or %u\n", cmd.param, cmd.param);
+        printf("Param: %u\n", cmd.param);
     }
     
 // GPS Data Packets
     if (med_head.type == 2){
-        printf("DEBUG: GPS Data Type\n");
+//      printf("DEBUG: GPS Data Type\n");
         fread(&gps.latit, sizeof(gps.latit), 1, pcap);
         printf("Latitude: is %2.9f ", gps.latitude);
         if ((int)gps.latitude >=0){
@@ -253,7 +251,7 @@ int main(void){
     
 // Message Packets
     if (med_head.type == 3){
-        printf("DEBUG: Message Type\n");
+//      printf("DEBUG: Message Type\n");
         char *message;
         message = (char *) realloc(message, med_head.length-12);
         fread(message, med_head.length-12, 1, pcap);
@@ -272,34 +270,15 @@ int main(void){
 	prnt_head((unsigned char *)&ip_frame, sizeof(ip_frame));                // Print ip frame
     printf("Print UDP Frame\n");
 	prnt_head((unsigned char *)&udp_frame, sizeof(udp_frame));                // Print udp frame
-*/
+
     printf("Print Meditrik Header\n");
     prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print Meditrik Header
-    
-
-    
-
     
     printf("\n\n");
 
     printf("Print Meditrik Payload\n");
     prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print Meditrik Header
-
-
-/* EXAMPLE BIT-Masking for Flags
-
-    char flags = 0xFB; // 11111011b char mask = 0x01; // 00000001b
-    if(flags & mask){
-        printf("Flag 1 set!\n");
-    }
  */
-
-
-
-
-//  REFERENCE.   // buffer   // each elem    // numb elements    // file
-//  size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
-
 
 }
 
