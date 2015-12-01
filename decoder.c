@@ -91,19 +91,18 @@ struct MED_hdr {
 }med_head;
 
 // Meditrik Variable Portion - Will be one of the following
-struct MED_payload {
 
     /// 0 - Device Status - 28B
-    struct MED_stat{
+    struct status{
         unsigned char batt[16];
                 // IEEE 754 double-precision decimal (binary64)
         unsigned char gluc[4];         // 0-65000
         unsigned char caps[4];         // 0-65000
         unsigned char omor[4];         // 0-65000
-    }med_stat;
+    }status;
 
     /// 1 - Command Instruction - 8B
-    struct MED_cmd{
+    struct cmd{
         unsigned char out[4];
             // Sends command to device
             /// GET: STATUS(0), GPS(2)
@@ -112,25 +111,20 @@ struct MED_payload {
             /// RESERVED(4, 6)
         unsigned char param[4];
             // Parameters for given SET Commands
-    }med_cmd;
+    }cmd;
 
     /// 2 - GPS Data - 40B
-    struct MED_gps{
+    struct gps{
         unsigned char longi[16];
             // binary64 - degrees, can be negative
         unsigned char latit[16];
             // binary64 - degrees, can be negative
         unsigned char altit[8];
             // binary32
-    }med_gps;
+    }gps;
 
     /// 3 - Message
-    struct MED_mess{
-// INCORRECT. Must be med_length - 32 (for the med_header)
-        unsigned char text;
-            // NOT NULL-terminated
-    }med_message;
-};
+// INCORRECT. Must be med_length minus 32 (for the med_header)
 
 int main(void){
     /*
@@ -182,6 +176,9 @@ int main(void){
     med_head.from = ntohl(med_head.from);
     med_head.to = ntohl(med_head.to);
     
+    printf("Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
+    printf("Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
+    
     printf("Version: %02X or %u\n", med_head.version, med_head.version);
     printf("Sequence: %02X or %u\n", med_head.squence, med_head.squence);
     printf("From: %02X or %u\n", med_head.from, med_head.from);
@@ -202,6 +199,9 @@ int main(void){
 // Message Packets
     if (med_head.type == 3){
         printf("Message Type\n");
+        char message;
+        fread(&message, med_head.length-12, 1, pcap);
+        printf("Message: %s \n", &message);
     }
     
 /* DEBUG
@@ -219,8 +219,7 @@ int main(void){
     printf("Print Meditrik Header\n");
     prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print Meditrik Header
     
-    printf("Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
-    printf("Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
+
     
 
     
