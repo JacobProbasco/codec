@@ -1,12 +1,12 @@
 //
 //  main.c
-//  mastermind
+//  codec
 //
-//  Created by Jacob Probasco on 11/4/15.
+//  Created by Jacob Probasco on 12/01/15.
 //  Copyright © 2015 jprobasco. All rights reserved.
 //
 //  Nice features to add:
-//  change evaluation to math
+
 #include <stdio.h>          //fileno()
 #include <string.h>         // memset()
 #include <stdlib.h>
@@ -82,9 +82,9 @@ struct MED_hdr {
     unsigned int med_squence:9;
 // Double-check after conversion
     unsigned int med_type:3;
-    unsigned char med_length[4];
-    unsigned char med_srce_dev[8];
-    unsigned char med_dest_dev[8];
+    unsigned int med_length:16;
+    unsigned int med_srce_dev:32;
+    unsigned int med_dest_dev:32;
 }med_head;
 
 // Meditrik Variable Portion - Will be one of the following
