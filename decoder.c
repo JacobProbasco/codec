@@ -95,11 +95,14 @@ struct MED_hdr {
 
     /// 0 - Device Status - 28B
 struct status{
-    uint64_t batt[16];
+    union {
+        char batt[8];
+        double battery;
+    };
             // IEEE 754 double-precision decimal (binary64)
-    uint16_t gluc[4];         // 0-65000
-    uint16_t caps[4];         // 0-65000
-    uint16_t omor[4];         // 0-65000
+    uint16_t gluc;         // 0-65000
+    uint16_t caps;         // 0-65000
+    uint16_t omor;         // 0-65000
 }status;
 
 /// 1 - Command Instruction - 8B
@@ -151,7 +154,7 @@ int main(void){
     int prnt_head(unsigned char *buffer, int buff_size);    // For printing the data to screen
 
     FILE *pcap;
-    pcap = fopen("/usr/local/share/codec/hello.pcap", "rb");  // Open file as a data stream
+    pcap = fopen("/usr/local/share/codec/status.pcap", "rb");  // Open file as a data stream
 
     int pcap_fileno;                 				// Locate file number.
     pcap_fileno = fileno(pcap);                 	// Locate file number.
@@ -185,7 +188,22 @@ int main(void){
 // Device Status Packets
     if (med_head.type == 0){
         printf("DEBUG: Device Status Type\n");
-        //be64toh function might be useful
+        fread(&status.batt, sizeof(status.batt), 1, pcap);
+        printf("Battery: is %.2f\n", (status.battery * 100));
+        
+        fread(&status.gluc, sizeof(status.gluc), 1, pcap);
+        status.gluc = be16toh(status.gluc);
+        printf("Glucose: %02X or %u\n", status.gluc, status.gluc);
+        
+        fread(&status.caps, sizeof(status.caps), 1, pcap);
+        status.caps = be16toh(status.caps);
+        printf("Capsacian: %02X or %u\n", status.caps, status.caps);
+        
+        fread(&status.omor, sizeof(status.omor), 1, pcap);
+        status.omor = be16toh(status.omor);
+        printf("Omorfine: %02X or %u\n", status.omor, status.omor);
+        
+
     }
 // Command Instruction Packets
     if (med_head.type == 1){
