@@ -119,12 +119,21 @@ struct cmd{
 
 /// 2 - GPS Data - 40B
 struct gps{
-    unsigned char longi[16];
+    union {
+        char longi[8];
+        double longitude;
+    };
         // binary64 - degrees, can be negative
-    unsigned char latit[16];
+    union {
+        char latit[8];
+        double latitude;
         // binary64 - degrees, can be negative
-    unsigned char altit[8];
+    };
+    union {
+        char alti[4];
+        float altitude;
         // binary32
+    };
 }gps;
 
 int main(void){
@@ -154,7 +163,7 @@ int main(void){
     int prnt_head(unsigned char *buffer, int buff_size);    // For printing the data to screen
 
     FILE *pcap;
-    pcap = fopen("/usr/local/share/codec/command_glucose.pcap", "rb");  // Open file as a data stream
+    pcap = fopen("/usr/local/share/codec/gps.pcap", "rb");  // Open file as a data stream
 
     int pcap_fileno;                 				// Locate file number.
     pcap_fileno = fileno(pcap);                 	// Locate file number.
@@ -204,6 +213,7 @@ int main(void){
         printf("Omorfine: %02X or %u\n", status.omor, status.omor);
 
     }
+    
 // Command Instruction Packets
     if (med_head.type == 1){
         printf("DEBUG: Command Instruction Type\n");
@@ -215,10 +225,32 @@ int main(void){
         cmd.param = be16toh(cmd.param);
         printf("Param: %02X or %u\n", cmd.param, cmd.param);
     }
+    
 // GPS Data Packets
     if (med_head.type == 2){
         printf("DEBUG: GPS Data Type\n");
+        fread(&gps.latit, sizeof(gps.latit), 1, pcap);
+        printf("Latitude: is %2.9f ", gps.latitude);
+        if ((int)gps.latitude >=0){
+            printf("deg. N\n");
+        } else {
+            printf("deg. S\n");
+        }
+        
+        fread(&gps.longi, sizeof(gps.longi), 1, pcap);
+        printf("Longi: is %2.9f ", gps.longitude);
+        
+        if ((int)gps.longitude >= 0 && (int)gps.longitude <= 180){
+            printf("deg. W\n");
+        } else {
+            printf("deg. E\n");
+        }
+        
+        fread(&gps.alti, sizeof(gps.alti), 1, pcap);
+        printf("Altitude: is %.2f ft.\n", (gps.altitude * 6));
+        
     }
+    
 // Message Packets
     if (med_head.type == 3){
         printf("DEBUG: Message Type\n");
