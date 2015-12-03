@@ -30,6 +30,4 @@
 #define __LITTLE_ENDIAN LITTLE_ENDIAN
 #define __BYTE_ORDER    BYTE_ORDER
 #else
-#include
-#include
 #endif
