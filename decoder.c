@@ -11,11 +11,11 @@
 //// System-Level Header-Files
 #define _BSD_SOURCE
 #include <stdio.h>          //fileno()
-#include <string.h>         // memset()
-#include <stdlib.h>
+#include <string.h>         // memset() and strerror()
+#include <stdlib.h>         // system() and others
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include <unistd.h>         // strerror()
 #include <stdint.h>
 
 //// codec header-files
@@ -126,8 +126,7 @@ int main(int argc, char *argv[]){
             printf("SET_CAPSAICIN to: %u\n", cmd.param);
         }
         if (cmd.out == 5){
-            fread(&cmd.param, sizeof(cmd.param), 1, pcap);
-            cmd.param = be16toh(cmd.param);
+            
             printf("SET_OMORFINE to: %u\n", cmd.param);
         }
     /// Repeat
