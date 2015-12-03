@@ -74,10 +74,6 @@ int main(int argc, char *argv[]){
     med_head.from = be32toh(med_head.from);
     med_head.to = be32toh(med_head.to);
     
-// FIXME: Remove All Commented debug code
-//    printf("DEBUG: Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
-//    printf("DEBUG: Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
-    
     printf("Version: %u\n", med_head.version);
     printf("Sequence: %u\n", med_head.squence);
     printf("From: %u\n", med_head.from);
@@ -88,7 +84,6 @@ int main(int argc, char *argv[]){
     
 // Device Status Packets
     if (med_head.type == 0){
-//      printf("DEBUG: Device Status Type\n");
         fread(&status.batt, sizeof(status.batt), 1, pcap);
         printf("Battery: is %.2f%%\n", (status.battery * 100));
         
@@ -108,7 +103,6 @@ int main(int argc, char *argv[]){
     
 // Command Instruction Packets
     if (med_head.type == 1){
-//      printf("DEBUG: Command Instruction Type\n");
         
         fread(&cmd.out, sizeof(cmd.out), 1, pcap);
         cmd.out = be16toh(cmd.out);
@@ -152,7 +146,6 @@ int main(int argc, char *argv[]){
     
 // GPS Data Packets
     if (med_head.type == 2){
-//      printf("DEBUG: GPS Data Type\n");
         fread(&gps.latit, sizeof(gps.latit), 1, pcap);
         printf("Latitude: is %2.9f ", gps.latitude);
         if ((int)gps.latitude >=0){
@@ -177,7 +170,6 @@ int main(int argc, char *argv[]){
     
 // Message Packets
     if (med_head.type == 3){
-//      printf("DEBUG: Message Type\n");
         char *message;
         message = (char *) realloc(message, med_head.length-12);
         fread(message, med_head.length-12, 1, pcap);
@@ -185,26 +177,6 @@ int main(int argc, char *argv[]){
         free(message);
     }
     
-/* DEBUG
-    printf("Print Global PCAP Header\n");
-	prnt_head((unsigned char *)&global_pcap_head, sizeof(global_pcap_head));                // Print global Header
-    printf("Print packet header\n");
-	prnt_head((unsigned char *)&packet_head, sizeof(packet_head));                // Print packet header
-	printf("Print ethernet frame\n");
-	prnt_head((unsigned char *)&eth_frame, sizeof(eth_frame));		// Print Ethernet frame
-    printf("Print IP Frame\n");
-	prnt_head((unsigned char *)&ip_frame, sizeof(ip_frame));                // Print ip frame
-    printf("Print UDP Frame\n");
-	prnt_head((unsigned char *)&udp_frame, sizeof(udp_frame));                // Print udp frame
-
-    printf("Print Meditrik Header\n");
-    prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print Meditrik Header
-    
-    printf("\n\n");
-
-    printf("Print Meditrik Payload\n");
-    prnt_head((unsigned char *)&med_head, sizeof(med_head));                // Print Meditrik Header
- */
 
 }
 
