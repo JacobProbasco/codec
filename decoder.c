@@ -116,19 +116,19 @@ int main(int argc, char *argv[]){
         }
     /// SET Commands
         if (cmd.out == 1){
-            printf("SET_GLUCOSE to: %u\n", cmd.param);
             fread(&cmd.param, sizeof(cmd.param), 1, pcap);
             cmd.param = be16toh(cmd.param);
+            printf("SET_GLUCOSE to: %u\n", cmd.param);
         }
         if (cmd.out == 3){
-            printf("SET_CAPSAICIN to: %u\n", cmd.param);
             fread(&cmd.param, sizeof(cmd.param), 1, pcap);
             cmd.param = be16toh(cmd.param);
+            printf("SET_CAPSAICIN to: %u\n", cmd.param);
         }
         if (cmd.out == 5){
-            printf("SET_OMORFINE to: %u\n", cmd.param);
             fread(&cmd.param, sizeof(cmd.param), 1, pcap);
             cmd.param = be16toh(cmd.param);
+            printf("SET_OMORFINE to: %u\n", cmd.param);
         }
     /// Repeat
         if (cmd.out == 7){
