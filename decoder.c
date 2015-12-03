@@ -60,10 +60,10 @@ int main(int argc, char *argv[]){
 
     
 // FIXME: Make PCAP header a union and write to that union... save 6 lines.
-    fread(&global_pcap_head, sizeof(global_pcap_head), 1, pcap);
-    fread(&packet_head, sizeof(packet_head), 1, pcap);
-	fread(&eth_frame, sizeof(eth_frame), 1, pcap);
-    fread(&ip_frame, sizeof(ip_frame), 1, pcap);	
+    fread(&global, sizeof(global), 1, pcap);
+    fread(&packet, sizeof(packet), 1, pcap);
+	fread(&ethernet, sizeof(ethernet), 1, pcap);
+    fread(&IPv4, sizeof(IPv4), 1, pcap);
     fread(&udp_frame, sizeof(udp_frame), 1, pcap);
     fread(&med_head, sizeof(med_head), 1, pcap);
     
@@ -104,37 +104,37 @@ int main(int argc, char *argv[]){
 // Command Instruction Packets
     if (med_head.type == 1){
         
-        fread(&cmd.out, sizeof(cmd.out), 1, pcap);
-        cmd.out = be16toh(cmd.out);
+        fread(&cmnd.out, sizeof(cmnd.out), 1, pcap);
+        cmnd.out = be16toh(cmnd.out);
         
     /// GET Commands
-        if (cmd.out == 0){
+        if (cmnd.out == 0){
             printf("GET_STATUS\n");
         }
-        if (cmd.out == 2){
+        if (cmnd.out == 2){
             printf("GET_GPS\n");
         }
     /// SET Commands
-        if (cmd.out == 1){
-            fread(&cmd.param, sizeof(cmd.param), 1, pcap);
-            cmd.param = be16toh(cmd.param);
-            printf("SET_GLUCOSE to: %u\n", cmd.param);
+        if (cmnd.out == 1){
+            fread(&cmnd.param, sizeof(cmnd.param), 1, pcap);
+            cmnd.param = be16toh(cmnd.param);
+            printf("SET_GLUCOSE to: %u\n", cmnd.param);
         }
-        if (cmd.out == 3){
-            fread(&cmd.param, sizeof(cmd.param), 1, pcap);
-            cmd.param = be16toh(cmd.param);
-            printf("SET_CAPSAICIN to: %u\n", cmd.param);
+        if (cmnd.out == 3){
+            fread(&cmnd.param, sizeof(cmnd.param), 1, pcap);
+            cmnd.param = be16toh(cmnd.param);
+            printf("SET_CAPSAICIN to: %u\n", cmnd.param);
         }
-        if (cmd.out == 5){
+        if (cmnd.out == 5){
             
-            printf("SET_OMORFINE to: %u\n", cmd.param);
+            printf("SET_OMORFINE to: %u\n", cmnd.param);
         }
     /// Repeat
-        if (cmd.out == 7){
+        if (cmnd.out == 7){
             printf("REPEAT");
         }
         
-        if ((cmd.out == 4) || (cmd.out == 6)){
+        if ((cmnd.out == 4) || (cmnd.out == 6)){
             printf("Error: Undefined Reserved command used. Ignoring.");
         }
         

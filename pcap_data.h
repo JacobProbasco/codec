@@ -11,7 +11,7 @@
 #define PCAP_STRUCTS_H
 
 // PCAP Global Header - 24B
-struct PGBL_hdr {
+struct {
     unsigned char magic_num[4];
     // Magic Number
     // if 0xa1b2c3d4, big Endian
@@ -29,27 +29,27 @@ struct PGBL_hdr {
     // Max. Len. of pcap capture dev ( assume 65,523)
     unsigned char linklay_type[4];
     // link-layer head type (ethernet)
-}global_pcap_head;
+}global;
 
 // PCAP Packet Header - 16B
-struct PPACK_hdr {
+struct {
     unsigned char timestamp[4];
     unsigned char microseconds[4];
     unsigned char saved_size[4];
     // size in bytes in file
     unsigned char live_size[4];
     // data-stream size when captured
-}packet_head;
+}packet;
 
 // Ethernet Header - 14B
-struct ETH_frame {
+struct {
     unsigned char dest[6];
     unsigned char src[6];
     unsigned char butt[2];
     // 08 00 = IPv4
-}eth_frame;
+}ethernet;
 
-struct IP_hdr {
+struct {
     unsigned int ip_ver:8;
     // IPv4 - 0b0100; IPv6 - 0b0110
     //	unsigned int ihl : 4;
@@ -68,10 +68,10 @@ struct IP_hdr {
     unsigned char chksum[2];
     unsigned char srce_ip[4];
     unsigned char dest_ip[4];
-}ip_frame;
+}IPv4;
 
 // UDP Header
-struct UDP_frame {
+struct {
     unsigned char srce_pt[2];
     unsigned char dest_pt[2];
     unsigned char length[2];
@@ -79,7 +79,7 @@ struct UDP_frame {
 }udp_frame;
 
 // Meditrik header. - Maximum size of med_header is 24B
-struct MED_hdr {
+struct {
     // Account for order of bits in struct.
     union {
         struct{
@@ -97,7 +97,7 @@ struct MED_hdr {
 // Meditrik Variable Portion - Will be one of the following
 
 /// 0 - Device Status - 28B
-struct status{
+struct {
     union {
         char batt[8];
         double battery;
@@ -109,7 +109,7 @@ struct status{
 }status;
 
 /// 1 - Command Instruction - 8B
-struct cmd{
+struct {
     uint16_t out;
     // Sends command to device
     /// GET: STATUS(0), GPS(2)
@@ -118,10 +118,10 @@ struct cmd{
     /// RESERVED(4, 6)
     uint16_t param;
     // Parameters for given SET Commands
-}cmd;
+}cmnd;
 
 /// 2 - GPS Data - 40B
-struct gps{
+struct {
     union {
         char longi[8];
         double longitude;
