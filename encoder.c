@@ -12,6 +12,9 @@
 #include <stdlib.h>         // system() and others
 #include <unistd.h>         // strerror()
 
+
+void usage_error (const char *filename);    // prints the proper usage of encoder.c
+
 int main(int argc, const char * argv[]) {
 
     extern int errno;                  // Error handling
@@ -39,11 +42,20 @@ int main(int argc, const char * argv[]) {
             exit(0);
         }else if (!text_input){
             printf("Error! No text file at '%s'.\n", argv[1]);
+            usage_error (*argv);
         }else if (!pcap_out){
             printf("Error! No destination PCAP file at '%s'\n", argv[2]);
+            usage_error (*argv);
         }
-        printf("Usage: %s <path to text file> <path to destination PCAP file>\n (this will overwrite that file)\n", argv[0]);
-        exit(1);
+        
+
     }
     return 0;
 }
+
+// prints the proper usage of arguments in encoder.c
+void usage_error (const char *filename){
+    printf("Usage: %s <path to text file> <path to destination PCAP file>\n (this will overwrite that file)\n", filename);
+    exit(1);
+    
+};
