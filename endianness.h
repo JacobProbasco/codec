@@ -1,10 +1,11 @@
-//
-//  codec.h
 //  codec
+//  endianness.h
 //
 //  Created by Jacob Probasco on 12/1/15.
 //  Copyright © 2015 jprobasco. All rights reserved.
 //
+//  I hate this file because it is only here for OS X compatibility.
+//  FIXME: Find a different solution to uint64 endianess and get rid of this stupid file.
 
 #ifdef __APPLE__
 #include <machine/endian.h>

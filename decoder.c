@@ -1,141 +1,27 @@
-//
-//  main.c
 //  codec
+//  decoder.c
 //
 //  Created by Jacob Probasco on 12/01/15.
 //  Copyright © 2015 jprobasco. All rights reserved.
 //
-//  Thank God that I am not my code.
+//  "Thank God that I am not my code."
 
+// FIXME: Remove excess header files. (which ones?)
+
+//// System-Level Header-Files
 #define _BSD_SOURCE
 #include <stdio.h>          //fileno()
 #include <string.h>         // memset()
-#include "codec.h"         // little<->big endian functions
 #include <stdlib.h>
 #include <sys/types.h>
-// Find alternate solution to this
 #include <sys/stat.h>
 #include <unistd.h>
-// Might not need these
 #include <stdint.h>
 
-// PCAP Global Header - 24B
-struct PGBL_hdr {
-    unsigned char magic_num[4];
-                // if 0xa1b2c3d4, big Endian
-    unsigned char maj_ver[2];
-                // Assume 2
-    unsigned char min_ver[2];
-                // assume .4
-    unsigned char timez_offset[4];
-    unsigned char time_accuracy[4];
-    unsigned char max_length[4];
-                // Max. Len. of pcap capture dev ( assume 65,523)
-    unsigned char linklay_type[4];
-                // link-layer head type (ethernet)
-}global_pcap_head;
+//// codec header-files
+#include "endianness.h"    // little<->big endian Linux Compatibility
+#include "pcap_data.h"     // Data structures for PCAP files
 
-// PCAP Packet Header - 16B
-struct PPACK_hdr {
-    unsigned char timestamp[4];
-    unsigned char microseconds[4];
-    unsigned char saved_size[4];
-                // size in bytes in file
-    unsigned char live_size[4];
-                // data-stream size when captured
-}packet_head;
-
-// Ethernet Header - 14B
-struct ETH_frame {
-    unsigned char dest[6];
-    unsigned char src[6];
-    unsigned char butt[2];
-                // 08 00 = IPv4
-}eth_frame;
-
-struct IP_hdr {
-    unsigned char hat[2];
-    unsigned char length[2];
-                // MAXIMUM size 1500B
-    unsigned char id[2];
-    unsigned char flags[1];
-    unsigned char offset[1];
-    unsigned char ttl[1];
-    unsigned char protocol[1];
-                // 11 = UDP
-    unsigned char chksum[2];
-    unsigned char srce_ip[4];
-    unsigned char dest_ip[4];
-}ip_frame;
-
-// UDP Header
-struct UDP_frame {
-    unsigned char srce_pt[2];
-    unsigned char dest_pt[2];
-    unsigned char length[2];
-    unsigned char chksum[2];
-}udp_frame;
-
-// Meditrik header. - Maximum size of med_header is 24B
-struct MED_hdr {
-    // Account for order of bits in struct.
-    union {
-        struct{
-            uint16_t type:3;
-            uint16_t squence:9;
-            uint16_t version:4;
-        };
-        uint16_t nthosts;
-    };
-    uint16_t length:16;
-    uint32_t from:32;
-    uint32_t to:32;
-}med_head;
-
-// Meditrik Variable Portion - Will be one of the following
-
-    /// 0 - Device Status - 28B
-struct status{
-    union {
-        char batt[8];
-        double battery;
-    };
-            // IEEE 754 double-precision decimal (binary64)
-    uint16_t gluc;         // 0-65000
-    uint16_t caps;         // 0-65000
-    uint16_t omor;         // 0-65000
-}status;
-
-/// 1 - Command Instruction - 8B
-struct cmd{
-    uint16_t out;
-        // Sends command to device
-        /// GET: STATUS(0), GPS(2)
-        /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
-        /// REPEAT(7)
-        /// RESERVED(4, 6)
-    uint16_t param;
-        // Parameters for given SET Commands
-}cmd;
-
-/// 2 - GPS Data - 40B
-struct gps{
-    union {
-        char longi[8];
-        double longitude;
-    };
-        // binary64 - degrees, can be negative
-    union {
-        char latit[8];
-        double latitude;
-        // binary64 - degrees, can be negative
-    };
-    union {
-        char alti[4];
-        float altitude;
-        // binary32
-    };
-}gps;
 
 int main(void){
     /*
