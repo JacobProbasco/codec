@@ -23,14 +23,21 @@
 #include "pcap_data.h"     // Data structures for PCAP files
 
 
-int main(void){
-    /*
+int main(int argc, char *argv[]){
+
 
     extern int errno;                  // Error handling
-    int error_n;                        // Place-holder, error number
-    char secr_word[36] = { '\0' };      // Place-holder, secret word
+    int error_n;                       // Place-holder, error number
 
-    // Manage optional command-line arguments
+    struct stat pcap_stat;                                  // For getting pcap file information
+    long long pcap_size;
+    int prnt_head(unsigned char *buffer, int buff_size);    // For printing the data to screen
+    
+    FILE *pcap;
+    
+// FIXME: Correct Error Handling response to not say "Undefined Error"
+
+    // Command-line arguments
     if(argc > 2){                       // Check for more than one argument, error.
         error_n = errno;
         system("clear");
@@ -38,25 +45,21 @@ int main(void){
         printf("Usage: %s <pcap file absolute path>\n", argv[0]);
         return 7;                       // Argument List too Long.
     }else if(argc == 2){                // Check for user-provided pcap.
-        pcap_path = argv[1];            // Set to user-provided path.
+        pcap = fopen(argv[1], "rb");  // Open file as a data stream
     }else{
-        // Set default path to Dictionary file.
+        // For classroom environment
+        // "/usr/local/share/codec/command_glucose.pcap"
         fprintf(stderr, "Error in opening %s: %s\n", argv[0], strerror(error_n));
         printf("Usage: %s <pcap file absolute path>\n", argv[0]);
     }
-*/
-    struct stat pcap_stat;                                  // For getting pcap file information
-    long long pcap_size;
-    int prnt_head(unsigned char *buffer, int buff_size);    // For printing the data to screen
-
-    FILE *pcap;
-    pcap = fopen("/usr/local/share/codec/command_glucose.pcap", "rb");  // Open file as a data stream
 
     int pcap_fileno;                 				// Locate file number.
     pcap_fileno = fileno(pcap);                 	// Locate file number.
     fstat(pcap_fileno, &pcap_stat);                 // Load File's stats into pcap_stat.
     pcap_size = pcap_stat.st_size;                  // Set pcap_size to the size of the file.
 
+    
+// FIXME: Make PCAP header a union and write to that union... save 6 lines.
     fread(&global_pcap_head, sizeof(global_pcap_head), 1, pcap);
     fread(&packet_head, sizeof(packet_head), 1, pcap);
 	fread(&eth_frame, sizeof(eth_frame), 1, pcap);
@@ -64,12 +67,14 @@ int main(void){
     fread(&udp_frame, sizeof(udp_frame), 1, pcap);
     fread(&med_head, sizeof(med_head), 1, pcap);
     
-    // Network to host on packet
+// FIXME: Make own function
+    // Transcribe Network bite-order to host bite-order
     med_head.nthosts = be16toh(med_head.nthosts);
     med_head.length = be16toh(med_head.length);
     med_head.from = be32toh(med_head.from);
     med_head.to = be32toh(med_head.to);
     
+// FIXME: Remove All Commented debug code
 //    printf("DEBUG: Meditrick Type is: %02X or %u\n", med_head.type, med_head.type);
 //    printf("DEBUG: Meditrick Total Length is: %02X or %u\n\n", med_head.length, med_head.length);
     
@@ -77,6 +82,9 @@ int main(void){
     printf("Sequence: %u\n", med_head.squence);
     printf("From: %u\n", med_head.from);
     printf("To: %u\n", med_head.to);
+
+    
+// FIXME: loop to deal with Multiple packets in a PCAP. malloc space as needed.
     
 // Device Status Packets
     if (med_head.type == 0){
