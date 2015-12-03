@@ -109,37 +109,34 @@ int main(int argc, char *argv[]){
         
     /// GET Commands
         if (cmd.out == 0){
-            printf("GET_STATUS(0)\n");
+            printf("GET_STATUS\n");
         }
         if (cmd.out == 2){
-            printf("GET_GPS(2)\n");
+            printf("GET_GPS\n");
         }
     /// SET Commands
         if (cmd.out == 1){
-            printf("SET_GLUCOSE(1) to:\n");
+            printf("SET_GLUCOSE to: %u\n", cmd.param);
             fread(&cmd.param, sizeof(cmd.param), 1, pcap);
             cmd.param = be16toh(cmd.param);
-            printf("%u\n", cmd.param);
         }
         if (cmd.out == 3){
-            printf("SET_CAPSAICIN(3) to:\n");
+            printf("SET_CAPSAICIN to: %u\n", cmd.param);
             fread(&cmd.param, sizeof(cmd.param), 1, pcap);
             cmd.param = be16toh(cmd.param);
-            printf("%u\n", cmd.param);
         }
         if (cmd.out == 5){
-            printf("SET_OMORFINE(5) to:\n");
+            printf("SET_OMORFINE to: %u\n", cmd.param);
             fread(&cmd.param, sizeof(cmd.param), 1, pcap);
             cmd.param = be16toh(cmd.param);
-            printf("%u\n", cmd.param);
         }
     /// Repeat
         if (cmd.out == 7){
-            printf("REPEAT(7)");
+            printf("REPEAT");
         }
         
         if ((cmd.out == 4) || (cmd.out == 6)){
-            printf("Error: Reserved command used. Ignoring.");
+            printf("Error: Undefined Reserved command used. Ignoring.");
         }
         
     }
