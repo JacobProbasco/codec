@@ -57,7 +57,7 @@ typedef struct udp_header
 } udp_header_t;
 
 
-typedef struct PCAP{
+
 // PCAP Global Header - 24B
 struct global{
     uint32_t magic_num;
@@ -125,7 +125,7 @@ struct {
     unsigned char length[2];
     unsigned char chksum[2];
 }udp_frame;
-}PCAP;
+
 
 // Meditrik header. - Maximum size of med_header is 24B
 struct {
