@@ -10,25 +10,73 @@
 #ifndef PCAP_STRUCTS_H
 #define PCAP_STRUCTS_H
 
+
+typedef struct pcap_hdr_s {
+    uint32_t magic_number;   /* magic number */
+    uint16_t version_major;  /* major version number */
+    uint16_t version_minor;  /* minor version number */
+    int32_t  thiszone;       /* GMT to local correction */
+    uint32_t sigfigs;        /* accuracy of timestamps */
+    uint32_t snaplen;        /* max length of captured packets, in octets */
+    uint32_t network;        /* data link type */
+} pcap_hdr_t;
+
+typedef struct pcaprec_hdr_s {
+    uint32_t ts_sec;         /* timestamp seconds */
+    uint32_t ts_usec;        /* timestamp microseconds */
+    uint32_t incl_len;       /* number of octets of packet saved in file */
+    uint32_t orig_len;       /* actual length of packet */
+} pcaprec_hdr_t;
+
+typedef struct ethernet_hdr_s {
+    uint8_t dst[6];    /* destination host address */
+    uint8_t src[6];    /* source host address */
+    uint16_t type;     /* IP? ARP? RARP? etc */
+} ethernet_hdr_t;
+
+typedef struct ip_hdr_s {
+    uint8_t  ip_hl:4, /* both fields are 4 bits */
+ip_v:4;
+    uint8_t        ip_tos;
+    uint16_t       ip_len;
+    uint16_t       ip_id;
+    uint16_t       ip_off;
+    uint8_t        ip_ttl;
+    uint8_t        ip_p;
+    uint16_t       ip_sum;
+    uint32_t ip_src;
+    uint32_t ip_dst;
+}ip_hdr_t;
+
+typedef struct udp_header
+{
+    uint16_t src;
+    uint16_t dst;
+    uint16_t length;
+    uint16_t checksum;
+} udp_header_t;
+
+
+typedef struct PCAP{
 // PCAP Global Header - 24B
-struct {
-    unsigned char magic_num[4];
-    // Magic Number
-    // if 0xa1b2c3d4, big Endian
-    unsigned char maj_ver[2];
-    // Major Version Number
-    // Assume 2
-    unsigned char min_ver[2];
-    // Minor Version Number
-    // assume .4
-    unsigned char timez_offset[4];
-    // GMT to Local time zone
-    unsigned char time_accuracy[4];
-    // Length of time accuracy
-    unsigned char max_length[4];
-    // Max. Len. of pcap capture dev ( assume 65,523)
-    unsigned char linklay_type[4];
-    // link-layer head type (ethernet)
+struct global{
+    uint32_t magic_num;
+            // Magic Number
+            // if 0xa1b2c3d4, big Endian
+    uint16_t maj_ver;
+            // Major Version Number
+            // Assume 2
+    uint16_t min_ver;
+            // Minor Version Number
+            // assume .4
+    int32_t timez_offset;
+            // GMT to Local time zone
+    uint32_t time_accuracy;
+            // Length of time accuracy
+    uint32_t max_length;
+            // Max. Len. of pcap capture dev ( assume 65,523)
+    uint32_t linklay_type;
+            // link-layer head type (ethernet)
 }global;
 
 // PCAP Packet Header - 16B
@@ -77,6 +125,7 @@ struct {
     unsigned char length[2];
     unsigned char chksum[2];
 }udp_frame;
+}PCAP;
 
 // Meditrik header. - Maximum size of med_header is 24B
 struct {
