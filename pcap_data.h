@@ -80,7 +80,7 @@ struct global{
 }global;
 
 // PCAP Packet Header - 16B
-struct {
+struct packet{
     unsigned char timestamp[4];
     unsigned char microseconds[4];
     unsigned char saved_size[4];
@@ -90,14 +90,14 @@ struct {
 }packet;
 
 // Ethernet Header - 14B
-struct {
+struct ethernet{
     unsigned char dest[6];
     unsigned char src[6];
     unsigned char butt[2];
     // 08 00 = IPv4
 }ethernet;
 
-struct {
+struct IPv4{
     unsigned int ip_ver:8;
     // IPv4 - 0b0100; IPv6 - 0b0110
     //	unsigned int ihl : 4;
@@ -119,7 +119,7 @@ struct {
 }IPv4;
 
 // UDP Header
-struct {
+struct UDP{
     unsigned char srce_pt[2];
     unsigned char dest_pt[2];
     unsigned char length[2];
@@ -128,7 +128,7 @@ struct {
 
 
 // Meditrik header. - Maximum size of med_header is 24B
-struct {
+struct med_head{
     // Account for order of bits in struct.
     union {
         struct{
@@ -146,7 +146,7 @@ struct {
 // Meditrik Variable Portion - Will be one of the following
 
 /// 0 - Device Status - 28B
-struct {
+struct status{
     union {
         char batt[8];
         double battery;
@@ -158,7 +158,7 @@ struct {
 }status;
 
 /// 1 - Command Instruction - 8B
-struct {
+struct cmnd{
     uint16_t out;
     // Sends command to device
     /// GET: STATUS(0), GPS(2)
@@ -170,7 +170,7 @@ struct {
 }cmnd;
 
 /// 2 - GPS Data - 40B
-struct {
+struct gps{
     union {
         char longi[8];
         double longitude;
