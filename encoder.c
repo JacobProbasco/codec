@@ -90,7 +90,6 @@ int main(int argc, const char * argv[]) {
      */
     
     fwrite(&global, sizeof(global), 1, pcap_out);
-    fwrite(&global, sizeof(global), 1, pcap_out);
     fwrite(&packet, sizeof(packet), 1, pcap_out);
     fwrite(&ethernet, sizeof(ethernet), 1, pcap_out);
     fwrite(&IPv4, sizeof(IPv4), 1, pcap_out);
