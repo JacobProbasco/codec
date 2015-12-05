@@ -12,6 +12,8 @@
 #include <stdlib.h>         // system() and others
 #include <unistd.h>         // strerror()
 #include <stddef.h>         // offsetof()
+#include <errno.h>
+
 #include "pcap_data.h"
 
 void set_PCAP(int **);
@@ -27,8 +29,6 @@ void usage_error (const char *filename);    // print the proper usage of encoder
 int main(int argc, const char * argv[]) {
     
     extern int errno;                  // Error handling
-    int error_n;                       // Place-holder, error number
-    
     
     FILE *text_input;
     FILE *pcap_out = NULL;
@@ -48,7 +48,7 @@ int main(int argc, const char * argv[]) {
      */
     
     ///DEBUG - REMOVE
-    text_input = fopen("/codecbuilds/Debug/textfile", "rb");
+    text_input = fopen("/command_glucose", "rb");
     pcap_out = fopen("/codecbuilds/Debug/pcapfile.pcap", "w+b");       // Writeable so
     
     if(argc == 3){
@@ -67,6 +67,22 @@ int main(int argc, const char * argv[]) {
         }
     }
     // Array of pointers for Network data structure
+    
+    char character;
+    while((character = fgetc(text_input)) != (EOF)){
+        
+        if(fseek(text_input, 2, SEEK_CUR)== -1){
+            break;
+        }
+        
+        printf("%c\n", character);
+        
+        fseek(text_input, -2, SEEK_CUR);
+        
+    }
+    
+
+    
     
     struct global global;
     struct packet packet;
