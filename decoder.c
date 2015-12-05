@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
     FILE *pcap;
     
 // FIXME: Correct Error Handling response to not say "Undefined Error"
-/* DEBUG
+
     // Command-line arguments
     if(argc > 2){                       // Check for more than one argument, error.
         error_n = errno;
@@ -52,9 +52,8 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Error in opening %s: %s\n", argv[0], strerror(error_n));
         printf("Usage: %s <pcap file absolute path>\n", argv[0]);
     }
-*/
     
-    pcap = fopen("/usr/local/share/codec/command_glucose.pcap", "rb");
+// DEBUG: pcap = fopen("/usr/local/share/codec/command_glucose.pcap", "rb");
     int pcap_fileno;                 				// Locate file number.
     pcap_fileno = fileno(pcap);                 	// Locate file number.
     fstat(pcap_fileno, &pcap_stat);                 // Load File's stats into pcap_stat.
