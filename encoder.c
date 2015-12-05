@@ -102,33 +102,39 @@ int main(int argc, const char * argv[]) {
     struct cmnd cmnd;
     struct gps gps;
     
+// DEBUG Variables
+    
+    
     med_head.type_seq_ver.version = 1; // always 1
     med_head.type_seq_ver.squence = 1;
     med_head.type_seq_ver.type = 1;
-
+    
+// END DEBUG variables
+    
+    
 // MEDITRICK HEADER
     
 ////STATUS
-    if (med_head.type_seq_ver.version == 0){
+    if (med_head.type_seq_ver.type == 0){
         
     }
     
 ////COMMAND
-    if (med_head.type_seq_ver.version == 1){
+    if (med_head.type_seq_ver.type == 1){
+        
         
     }
     
 ////GPS
-    if (med_head.type_seq_ver.version == 2){
+    if (med_head.type_seq_ver.type == 2){
         
     }
     
 ////MESSAGE
-    if (med_head.type_seq_ver.version == 0){
+    if (med_head.type_seq_ver.type == 3){
         
     }
     
-    med_head.length = 16;
     
     fclose(pcap_out);
     fclose(text_input);
