@@ -12,7 +12,7 @@
 #include <stdlib.h>         // system() and others
 #include <unistd.h>         // strerror()
 #include <stddef.h>         // offsetof()
-#include <sys/types.h>
+#include <stdint.h>
 #include <errno.h>
 
 #include "pcap_data.h"
