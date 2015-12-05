@@ -62,24 +62,23 @@ int main(int argc, char *argv[]){
 
     
 // FIXME: Make PCAP header a union and write to that union... save 6 lines.
-    fread(&global, sizeof(global), 1, pcap);
-    fread(&packet, sizeof(packet), 1, pcap);
-	fread(&ethernet, sizeof(ethernet), 1, pcap);
-    fread(&IPv4, sizeof(IPv4), 1, pcap);
-    fread(&udp_frame, sizeof(udp_frame), 1, pcap);
+    fread(&global, 24, 1, pcap);
+    fread(&packet, 16, 1, pcap);
+	fread(&ethernet, 14, 1, pcap);
+    fread(&IPv4, 20, 1, pcap);
+    fread(&udp_frame, 8, 1, pcap);
     
     fread(&med_head, sizeof(med_head), 1, pcap);
     
 // FIXME: Make own function
     // Transcribe Network bite-order to host bite-order
-    union type_seq_ver type_seq_ver;
-    type_seq_ver.nthosts = be16toh(type_seq_ver.nthosts);
+    med_head.type_seq_ver.nthosts = be16toh(med_head.type_seq_ver.nthosts);
     med_head.length = be16toh(med_head.length);
     med_head.from = be32toh(med_head.from);
     med_head.to = be32toh(med_head.to);
     
-    printf("Version: %u\n", type_seq_ver.version);
-    printf("Sequence: %u\n", type_seq_ver.squence);
+    printf("Version: %u\n", med_head.type_seq_ver.version);
+    printf("Sequence: %u\n", med_head.type_seq_ver.squence);
     printf("From: %u\n", med_head.from);
     printf("To: %u\n", med_head.to);
 
@@ -87,7 +86,7 @@ int main(int argc, char *argv[]){
 // FIXME: loop to deal with Multiple packets in a PCAP. malloc space as needed.
     
 // Device Status Packets
-    if (type_seq_ver.type == 0){
+    if (med_head.type_seq_ver.type == 0){
         fread(&status.batt, sizeof(status.batt), 1, pcap);
         printf("Battery: is %.2f%%\n", (status.battery * 100));
         
@@ -106,7 +105,7 @@ int main(int argc, char *argv[]){
     }
     
 // Command Instruction Packets
-    if (type_seq_ver.type == 1){
+    if (med_head.type_seq_ver.type == 1){
         
         fread(&cmnd.outgoing, sizeof(cmnd.outgoing), 1, pcap);
         cmnd.outgoing = be16toh(cmnd.outgoing);
@@ -145,7 +144,7 @@ int main(int argc, char *argv[]){
     }
     
 // GPS Data Packets
-    if (type_seq_ver.type == 2){
+    if (med_head.type_seq_ver.type == 2){
         fread(&gps.latit, sizeof(gps.latit), 1, pcap);
         printf("Latitude: is %2.9f ", gps.latitude);
         if ((int)gps.latitude >=0){
@@ -169,7 +168,7 @@ int main(int argc, char *argv[]){
     }
     
 // Message Packets
-    if (type_seq_ver.type == 3){
+    if (med_head.type_seq_ver.type == 3){
         char *message;
         message = (char *) realloc(message, med_head.length-12);
         fread(message, med_head.length-12, 1, pcap);
