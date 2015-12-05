@@ -12,6 +12,8 @@
 #include <stdlib.h>         // system() and others
 #include <unistd.h>         // strerror()
 #include <stddef.h>         // offsetof()
+#include <errno.h>
+
 #include "pcap_data.h"
 
 void set_PCAP(int **);
@@ -27,8 +29,6 @@ void usage_error (const char *filename);    // print the proper usage of encoder
 int main(int argc, const char * argv[]) {
     
     extern int errno;                  // Error handling
-    int error_n;                       // Place-holder, error number
-    
     
     FILE *text_input;
     FILE *pcap_out = NULL;
