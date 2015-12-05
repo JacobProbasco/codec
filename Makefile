@@ -14,4 +14,4 @@ debug: codec
 
 clean:
 	-rm decoder *.o
-    -rm decoder *.o
+	-rm decoder *.o
