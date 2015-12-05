@@ -58,14 +58,14 @@ typedef struct udp_header
 // Meditrik header. - Maximum size of med_header is 24B
 struct med_head{
     // Account for order of bits in struct.
-    union {
+    union type_seq_ver {
         struct{
             uint16_t type:3;
             uint16_t squence:9;
             uint16_t version:4;
         };
         uint16_t nthosts;
-    };
+    }type_seq_ver;
     uint16_t length:16;
     uint32_t from:32;
     uint32_t to:32;
