@@ -80,6 +80,15 @@ int main(int argc, const char * argv[]) {
     set_IPv4(&IPv4);
     set_udp(&UDP);
     
+    /* // Could not get this working. Supposed to loop the writing.
+     
+     void *structures[5] = { &global, &packet, &ethernet, &IPv4, &UDP };
+     
+     for (int i = 0; i < 6; i++){
+     fwrite(structures[i], sizeof(*structures[i]), 1, pcap_out);
+     }
+     */
+    
     fwrite(&global, sizeof(global), 1, pcap_out);
     fwrite(&global, sizeof(global), 1, pcap_out);
     fwrite(&packet, sizeof(packet), 1, pcap_out);
@@ -87,14 +96,44 @@ int main(int argc, const char * argv[]) {
     fwrite(&IPv4, sizeof(IPv4), 1, pcap_out);
     fwrite(&UDP, sizeof(UDP), 1, pcap_out);
     
-/* // Could not get this working. Supposed to loop the writing.
- 
-    void *structures[5] = { &global, &packet, &ethernet, &IPv4, &UDP };
+    union type_seq_ver med_tsv;
+    struct med_head med_head;
+    struct status status;
+    struct cmnd cmnd;
+    struct gps gps;
+    
+    med_head.type_seq_ver.version = 1; // always 1
+    med_head.type_seq_ver.squence = 1;
+    med_head.type_seq_ver.type = 1;
 
-    for (int i = 0; i < 6; i++){
-        fwrite(structures[i], sizeof(*structures[i]), 1, pcap_out);
+// MEDITRICK HEADER
+    
+////STATUS
+    if (med_head.type_seq_ver.version == 0){
+        
     }
-*/
+    
+////COMMAND
+    if (med_head.type_seq_ver.version == 1){
+        
+    }
+    
+////GPS
+    if (med_head.type_seq_ver.version == 2){
+        
+    }
+    
+////MESSAGE
+    if (med_head.type_seq_ver.version == 0){
+        
+    }
+    
+    med_head.length = 16;
+    
+    fclose(pcap_out);
+    fclose(text_input);
+    
+
     
 /*
     for(int i = 0; i < 6; i++){
@@ -141,9 +180,6 @@ int main(int argc, const char * argv[]) {
     }
 */
     
-    fclose(pcap_out);
-    fclose(text_input);
-    
     
     /*
     pcap_t *pd;
@@ -162,12 +198,6 @@ int main(int argc, const char * argv[]) {
     pcap_close(pd);
     pcap_dump_close(pdumper);
     */
-    
-    
-    med_head.version = 1;
-    med_head.squence = 1;
-    med_head.type = 1;
-    med_head.length = 16;
     
     
     

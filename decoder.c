@@ -60,11 +60,12 @@ int main(int argc, char *argv[]){
 
     
 // FIXME: Make PCAP header a union and write to that union... save 6 lines.
-    fread(&global, sizeof(global), 1, pcap);
-    fread(&packet, sizeof(packet), 1, pcap);
-	fread(&ethernet, sizeof(ethernet), 1, pcap);
-    fread(&IPv4, sizeof(IPv4), 1, pcap);
-    fread(&udp_frame, sizeof(udp_frame), 1, pcap);
+    fread(&CAPIT.global, sizeof(CAPIT.global), 1, pcap);
+    fread(&CAPIT.packet, sizeof(CAPIT.packet), 1, pcap);
+	fread(&CAPIT.ethernet, sizeof(CAPIT.ethernet), 1, pcap);
+    fread(&CAPIT.IPv4, sizeof(CAPIT.IPv4), 1, pcap);
+    fread(&CAPIT.udp_frame, sizeof(CAPIT.udp_frame), 1, pcap);
+    
     fread(&med_head, sizeof(med_head), 1, pcap);
     
 // FIXME: Make own function
