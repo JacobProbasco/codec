@@ -110,7 +110,7 @@ struct status{
 
 /// 1 - Command Instruction - 8B
 struct cmnd{
-    uint16_t out;
+    uint16_t outgoing;
     // Sends command to device
     /// GET: STATUS(0), GPS(2)
     /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)

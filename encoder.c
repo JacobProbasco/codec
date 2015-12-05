@@ -103,7 +103,6 @@ int main(int argc, const char * argv[]) {
     
     // DEBUG Variables
     
-    
     med_head.type_seq_ver.version = 1; // always 1
     med_head.type_seq_ver.squence = 1;
     med_head.type_seq_ver.type = 1;
@@ -119,8 +118,39 @@ int main(int argc, const char * argv[]) {
     }
     
     ////COMMAND
+    // Sends command to device
+    /// GET: STATUS(0), GPS(2)
+    /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
+    /// REPEAT(7)
+    /// RESERVED(4, 6)
     if (med_head.type_seq_ver.type == 1){
+        if (cmnd.outgoing == 0){
+            printf("GET: STATUS(0)\n");
+        } else if (cmnd.outgoing == 2){
+            printf("GET: GPS(2)\n");
+        }
         
+        else if (cmnd.outgoing == 1){
+            printf("SET: GLUSCOSE(1)\n");
+            
+        }
+        else if (cmnd.outgoing == 3){
+            printf("SET: CAPSACIAN(3)\n");
+        }
+        
+        else if (cmnd.outgoing == 5){
+            printf("OMORFINE(5)\n");
+        }
+        else if (cmnd.outgoing == 7){
+            printf("REPEAT(7)\n");
+        }
+        else if (cmnd.outgoing == 4 || cmnd.outgoing == 6){
+            printf("RESERVED\n");
+        }
+        else{
+            printf("Malformed Status\n");
+            exit(1);
+        }
         
     }
     
