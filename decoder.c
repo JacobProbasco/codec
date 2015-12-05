@@ -76,6 +76,7 @@ int main(int argc, char *argv[]){
     med_head.from = be32toh(med_head.from);
     med_head.to = be32toh(med_head.to);
     
+    printf("Type: %u\n", med_head.type_seq_ver.type);
     printf("Version: %u\n", med_head.type_seq_ver.version);
     printf("Sequence: %u\n", med_head.type_seq_ver.squence);
     printf("From: %u\n", med_head.from);
