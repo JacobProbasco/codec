@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
     FILE *pcap;
     
 // FIXME: Correct Error Handling response to not say "Undefined Error"
-
+/* DEBUG
     // Command-line arguments
     if(argc > 2){                       // Check for more than one argument, error.
         error_n = errno;
@@ -52,7 +52,9 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Error in opening %s: %s\n", argv[0], strerror(error_n));
         printf("Usage: %s <pcap file absolute path>\n", argv[0]);
     }
-
+*/
+    
+    pcap = fopen("/usr/local/share/codec/command_glucose.pcap", "rb");
     int pcap_fileno;                 				// Locate file number.
     pcap_fileno = fileno(pcap);                 	// Locate file number.
     fstat(pcap_fileno, &pcap_stat);                 // Load File's stats into pcap_stat.
@@ -60,23 +62,24 @@ int main(int argc, char *argv[]){
 
     
 // FIXME: Make PCAP header a union and write to that union... save 6 lines.
-    fread(&CAPIT.global, sizeof(CAPIT.global), 1, pcap);
-    fread(&CAPIT.packet, sizeof(CAPIT.packet), 1, pcap);
-	fread(&CAPIT.ethernet, sizeof(CAPIT.ethernet), 1, pcap);
-    fread(&CAPIT.IPv4, sizeof(CAPIT.IPv4), 1, pcap);
-    fread(&CAPIT.udp_frame, sizeof(CAPIT.udp_frame), 1, pcap);
+    fread(&global, sizeof(global), 1, pcap);
+    fread(&packet, sizeof(packet), 1, pcap);
+	fread(&ethernet, sizeof(ethernet), 1, pcap);
+    fread(&IPv4, sizeof(IPv4), 1, pcap);
+    fread(&udp_frame, sizeof(udp_frame), 1, pcap);
     
     fread(&med_head, sizeof(med_head), 1, pcap);
     
 // FIXME: Make own function
     // Transcribe Network bite-order to host bite-order
-    med_head.nthosts = be16toh(med_head.nthosts);
+    union type_seq_ver type_seq_ver;
+    type_seq_ver.nthosts = be16toh(type_seq_ver.nthosts);
     med_head.length = be16toh(med_head.length);
     med_head.from = be32toh(med_head.from);
     med_head.to = be32toh(med_head.to);
     
-    printf("Version: %u\n", med_head.version);
-    printf("Sequence: %u\n", med_head.squence);
+    printf("Version: %u\n", type_seq_ver.version);
+    printf("Sequence: %u\n", type_seq_ver.squence);
     printf("From: %u\n", med_head.from);
     printf("To: %u\n", med_head.to);
 
@@ -84,7 +87,7 @@ int main(int argc, char *argv[]){
 // FIXME: loop to deal with Multiple packets in a PCAP. malloc space as needed.
     
 // Device Status Packets
-    if (med_head.type == 0){
+    if (type_seq_ver.type == 0){
         fread(&status.batt, sizeof(status.batt), 1, pcap);
         printf("Battery: is %.2f%%\n", (status.battery * 100));
         
@@ -103,46 +106,46 @@ int main(int argc, char *argv[]){
     }
     
 // Command Instruction Packets
-    if (med_head.type == 1){
+    if (type_seq_ver.type == 1){
         
-        fread(&cmnd.out, sizeof(cmnd.out), 1, pcap);
-        cmnd.out = be16toh(cmnd.out);
+        fread(&cmnd.outgoing, sizeof(cmnd.outgoing), 1, pcap);
+        cmnd.outgoing = be16toh(cmnd.outgoing);
         
     /// GET Commands
-        if (cmnd.out == 0){
+        if (cmnd.outgoing == 0){
             printf("GET_STATUS\n");
         }
-        if (cmnd.out == 2){
+        if (cmnd.outgoing == 2){
             printf("GET_GPS\n");
         }
     /// SET Commands
-        if (cmnd.out == 1){
+        if (cmnd.outgoing == 1){
             fread(&cmnd.param, sizeof(cmnd.param), 1, pcap);
             cmnd.param = be16toh(cmnd.param);
             printf("SET_GLUCOSE to: %u\n", cmnd.param);
         }
-        if (cmnd.out == 3){
+        if (cmnd.outgoing == 3){
             fread(&cmnd.param, sizeof(cmnd.param), 1, pcap);
             cmnd.param = be16toh(cmnd.param);
             printf("SET_CAPSAICIN to: %u\n", cmnd.param);
         }
-        if (cmnd.out == 5){
+        if (cmnd.outgoing == 5){
             
             printf("SET_OMORFINE to: %u\n", cmnd.param);
         }
     /// Repeat
-        if (cmnd.out == 7){
+        if (cmnd.outgoing == 7){
             printf("REPEAT");
         }
         
-        if ((cmnd.out == 4) || (cmnd.out == 6)){
+        if ((cmnd.outgoing == 4) || (cmnd.outgoing == 6)){
             printf("Error: Undefined Reserved command used. Ignoring.");
         }
         
     }
     
 // GPS Data Packets
-    if (med_head.type == 2){
+    if (type_seq_ver.type == 2){
         fread(&gps.latit, sizeof(gps.latit), 1, pcap);
         printf("Latitude: is %2.9f ", gps.latitude);
         if ((int)gps.latitude >=0){
@@ -166,7 +169,7 @@ int main(int argc, char *argv[]){
     }
     
 // Message Packets
-    if (med_head.type == 3){
+    if (type_seq_ver.type == 3){
         char *message;
         message = (char *) realloc(message, med_head.length-12);
         fread(message, med_head.length-12, 1, pcap);
