@@ -1,4 +1,4 @@
-CFLAGS+=-std=c11 -Wall -Wextra -pedantic
+CFLAGS+=-std=c11 -Wall -Wextra
 
 CFLAGS+=-D_XOPEN_SOURCE
 CFLAGS+=-D_DARWIN_SOURCE

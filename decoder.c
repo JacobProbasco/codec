@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <unistd.h>         // strerror()
 #include <stdint.h>
+#include <errno.h>
 
 //// codec header-files
 #include "endianness.h"    // little<->big endian Linux Compatibility
@@ -26,7 +27,6 @@
 int main(int argc, char *argv[]){
 
 
-    extern int errno;                  // Error handling
     int error_n;                       // Place-holder, error number
 
     struct stat pcap_stat;                                  // For getting pcap file information
