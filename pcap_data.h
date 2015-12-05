@@ -10,7 +10,6 @@
 #ifndef PCAP_STRUCTS_H
 #define PCAP_STRUCTS_H
 
-
 typedef struct pcap_hdr_s {
     uint32_t magic_number;   /* magic number */
     uint16_t version_major;  /* major version number */
@@ -55,77 +54,6 @@ typedef struct udp_header
     uint16_t length;
     uint16_t checksum;
 } udp_header_t;
-
-
-
-// PCAP Global Header - 24B
-struct global{
-    uint32_t magic_num;
-            // Magic Number
-            // if 0xa1b2c3d4, big Endian
-    uint16_t maj_ver;
-            // Major Version Number
-            // Assume 2
-    uint16_t min_ver;
-            // Minor Version Number
-            // assume .4
-    int32_t timez_offset;
-            // GMT to Local time zone
-    uint32_t time_accuracy;
-            // Length of time accuracy
-    uint32_t max_length;
-            // Max. Len. of pcap capture dev ( assume 65,523)
-    uint32_t linklay_type;
-            // link-layer head type (ethernet)
-}global;
-
-// PCAP Packet Header - 16B
-struct packet{
-    unsigned char timestamp[4];
-    unsigned char microseconds[4];
-    unsigned char saved_size[4];
-    // size in bytes in file
-    unsigned char live_size[4];
-    // data-stream size when captured
-}packet;
-
-// Ethernet Header - 14B
-struct ethernet{
-    unsigned char dest[6];
-    unsigned char src[6];
-    unsigned char butt[2];
-    // 08 00 = IPv4
-}ethernet;
-
-struct IPv4{
-    unsigned int ip_ver:8;
-    // IPv4 - 0b0100; IPv6 - 0b0110
-    //	unsigned int ihl : 4;
-    // IP Header Length 4 bits min 5 = 20 bytes
-    unsigned int type_service:8;
-    // Default is 00
-    unsigned char packet_length[2];
-    // MAXIMUM size 1500B
-    // length of packet (including header and data)
-    unsigned char id[2];
-    unsigned char flags[1];
-    unsigned char offset[1];
-    unsigned char ttl[1];
-    unsigned char protocol[1];
-    // 11 = UDP
-    unsigned char chksum[2];
-    unsigned char srce_ip[4];
-    unsigned char dest_ip[4];
-}IPv4;
-
-// UDP Header
-struct UDP{
-    unsigned char srce_pt[2];
-    unsigned char dest_pt[2];
-    unsigned char length[2];
-    unsigned char chksum[2];
-}udp_frame;
-
 
 // Meditrik header. - Maximum size of med_header is 24B
 struct med_head{
@@ -187,5 +115,74 @@ struct gps{
         // binary32
     };
 }gps;
+
+// PCAP Global Header - 24B
+struct global{
+    uint32_t magic_num;
+    // Magic Number
+    // if 0xa1b2c3d4, big Endian
+    uint16_t maj_ver;
+    // Major Version Number
+    // Assume 2
+    uint16_t min_ver;
+    // Minor Version Number
+    // assume .4
+    int32_t timez_offset;
+    // GMT to Local time zone
+    uint32_t time_accuracy;
+    // Length of time accuracy
+    uint32_t max_length;
+    // Max. Len. of pcap capture dev ( assume 65,523)
+    uint32_t linklay_type;
+    // link-layer head type (ethernet)
+}global;
+
+// PCAP Packet Header - 16B
+struct packet{
+    uint32_t timestamp;
+    uint32_t microseconds;
+    uint32_t saved_size;
+    // size in bytes in file
+    uint32_t live_size;
+    // data-stream size when captured
+}packet;
+
+// Ethernet Header - 14B
+struct ethernet{
+    uint32_t dest;
+    uint32_t src;
+    uint32_t butt;
+    // 08 00 = IPv4
+}ethernet;
+
+struct IPv4{
+    unsigned int ip_ver;
+    // IPv4 - 0b0100; IPv6 - 0b0110
+    //	unsigned int ihl : 4;
+    // IP Header Length 4 bits min 5 = 20 bytes
+    unsigned int type_service;
+    // Default is 00
+    uint16_t packet_length;
+    // MAXIMUM size 1500B
+    // length of packet (including header and data)
+    uint16_t IP_id;
+    uint16_t flags;
+    uint16_t offset;
+    uint16_t ttl;
+    uint16_t protocol;
+    // 11 = UDP
+    uint16_t chksum;
+    uint32_t srce_ip;
+    uint32_t dest_ip;
+}IPv4;
+
+// UDP Header
+struct UDP{
+    uint16_t srce_pt;
+    uint16_t dest_pt;
+    uint16_t length;
+    uint16_t chksum;
+}udp_frame;
+
 
 #endif /* packet_h */

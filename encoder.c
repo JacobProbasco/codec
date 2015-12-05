@@ -11,9 +11,16 @@
 #include <string.h>         // memset() and strerror()
 #include <stdlib.h>         // system() and others
 #include <unistd.h>         // strerror()
+#include <stddef.h>         // offsetof()
 #include "pcap_data.h"
 
+void set_PCAP(int **);
 void set_global(struct global *);
+void set_packet(struct packet *);
+void set_ethernet(struct ethernet *);
+void set_IPv4(struct IPv4 *);
+void set_udp(struct UDP *);
+
 void usage_error (const char *filename);    // print the proper usage of encoder.c
 
 
@@ -25,7 +32,7 @@ int main(int argc, const char * argv[]) {
     
     FILE *text_input;
     FILE *pcap_out = NULL;
-    
+/* DEBUG - PUT BACK!!!
     // Command-line arguments
     if(argc != 3){                       // Check for more than two arguments, error.
         error_n = errno;
@@ -38,6 +45,11 @@ int main(int argc, const char * argv[]) {
     // Open files as a data stream
     text_input = fopen(argv[1], "rb");
     pcap_out = fopen(argv[2], "w+b");       // Writeable so we can use it if good.
+*/
+    
+///DEBUG - REMOVE
+    text_input = fopen("/codecbuilds/Debug/textfile", "rb");
+    pcap_out = fopen("/codecbuilds/Debug/pcapfile.pcap", "w+b");       // Writeable so
     
     if(argc == 3){
         // Check both files to validate they are there and accessable.
@@ -54,10 +66,51 @@ int main(int argc, const char * argv[]) {
             
         }
     }
+    // Array of pointers for Network data structure
     
     struct global global;
+    struct packet packet;
+    struct ethernet ethernet;
+    struct IPv4 IPv4;
+    struct UDP UDP;
+    
     set_global(&global);
-    fwrite(&global,24,1,pcap_out);
+    set_packet(&packet);
+    set_ethernet(&ethernet);
+    set_IPv4(&IPv4);
+    set_udp(&UDP);
+    
+    fwrite(&global, sizeof(global), 1, pcap_out);
+    fwrite(&global, sizeof(global), 1, pcap_out);
+    fwrite(&packet, sizeof(packet), 1, pcap_out);
+    fwrite(&ethernet, sizeof(ethernet), 1, pcap_out);
+    fwrite(&IPv4, sizeof(IPv4), 1, pcap_out);
+    fwrite(&UDP, sizeof(UDP), 1, pcap_out);
+    
+/* // Could not get this working. Supposed to loop the writing.
+ 
+    void *structures[5] = { &global, &packet, &ethernet, &IPv4, &UDP };
+
+    for (int i = 0; i < 6; i++){
+        fwrite(structures[i], sizeof(*structures[i]), 1, pcap_out);
+    }
+*/
+    
+/*
+    for(int i = 0; i < 6; i++){
+        printf("\n%p", &net_data + i);
+        printf("\n%d", net_data[i]);
+    }
+    
+    set_global(net_data);
+*/
+
+   
+    
+    
+
+    
+
 //***** Changes to data header
 //***** get rid of chars
 
@@ -185,14 +238,47 @@ void usage_error (const char *filename){
     exit(7);
 };
 
+void set_global(struct global *func_global){
 
-void set_global(struct global *myglobal){
+    func_global->magic_num =  0xa1b2c3d4;
+    func_global->maj_ver = 0x0002;
+    func_global->min_ver = 0x0004;
+    func_global->timez_offset = 0x00000000;
+    func_global->time_accuracy = 0x00000000;
+    func_global->max_length = 0x00019000;
+    func_global->linklay_type = 0x00000001;
+}
 
-    myglobal->magic_num =  0xa1b2c3d4;
-    myglobal->maj_ver = 0x0002;
-    myglobal->min_ver = 0x0004;
-    myglobal->timez_offset= 0x00000000;
-    myglobal->time_accuracy= 0x00000000;
-    myglobal->max_length= 0x00019000;
-    myglobal->linklay_type= 0x00000001;
+void set_packet(struct packet *func_packet){
+    func_packet->timestamp = 0x00000000;
+    func_packet->microseconds = 0x00000000;
+    func_packet->saved_size = 0x00000000;
+    func_packet->live_size = 0x00000000;
+}
+
+void set_ethernet(struct ethernet *func_ethernet){
+    func_ethernet->dest = 0xdeadbeef;
+    func_ethernet->src = 0xbeefdead;
+    func_ethernet->butt = 0x0800;
+}
+
+void set_IPv4(struct IPv4 *func_IPv4){
+    func_IPv4->ip_ver = 0x45;
+    func_IPv4->type_service = 0x00;
+    func_IPv4->packet_length = 0x0000;
+    func_IPv4->IP_id = 0x0000;
+    func_IPv4->flags = 0x0000;
+    func_IPv4->offset = 0x0000;
+    func_IPv4->ttl = 0x0000;
+    func_IPv4->protocol = 0x0000;
+    func_IPv4->chksum = 0x0000;
+    func_IPv4->srce_ip = 0x7f000001;
+    func_IPv4->dest_ip = 0x7f000002;
+}
+
+void set_udp(struct UDP *func_udp){
+    func_udp->srce_pt = 0x0435;
+    func_udp->dest_pt = 0x0000;
+    func_udp->length = 0x0000;
+    func_udp->chksum = 0x0000;
 }
