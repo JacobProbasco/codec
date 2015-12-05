@@ -33,12 +33,10 @@ int main(int argc, const char * argv[]) {
     
     FILE *text_input;
     FILE *pcap_out = NULL;
-    /* DEBUG - PUT BACK!!!
      // Command-line arguments
      if(argc != 3){                       // Check for more than two arguments, error.
-     error_n = errno;
      system("clear");
-     fprintf(stderr, "Error running %s: %s\n", argv[0], strerror(error_n));
+     fprintf(stderr, "Error running %s: %s\n", argv[0], strerror(errno));
      usage_error (*argv);
      return 7;                       // Argument List too Long.
      }
@@ -46,11 +44,6 @@ int main(int argc, const char * argv[]) {
      // Open files as a data stream
      text_input = fopen(argv[1], "rb");
      pcap_out = fopen(argv[2], "w+b");       // Writeable so we can use it if good.
-     */
-    
-    ///DEBUG - REMOVE
-    text_input = fopen("/command_glucose", "rb");
-    pcap_out = fopen("/codecbuilds/Debug/pcapfile.pcap", "w+b");       // Writeable so
     
     if(argc == 3){
         // Check both files to validate they are there and accessable.
@@ -60,19 +53,34 @@ int main(int argc, const char * argv[]) {
         } else if (!pcap_out){
             printf("Error! No destination PCAP file at '%s'\n", argv[2]);
             usage_error (*argv);
-        } else if (text_input && pcap_out){
-            
-            
-            printf("DEBUG: Your two file locations are good.\nWho knows if they are the correct types of files. Here...We....GO...\n\n");
-            
         }
     }
+    
+    printf("DEBUG: Your two file locations are good.\nWho knows if they are the correct types of files. Here...We....GO...\n\n");
+    
     // Array of pointers for Network data structure
     
     char character;
+    character = fgetc(text_input);
+    
+    // array of character arrays with the values for the default med_head
+    char words[5][10] = { "Type: ", "Version: ", "Squence: ", "From: ", "To: " };
+    
+    // conceptual for-loop for validating what type of line we are on in the file
+    // loop prints each [word] by its [character]
+    for (int word = 0; word < 5; word++){
+        for (int character = 0; character != sizeof(words[word]); character ++){
+            printf("%c", words[word][character]);
+            if (character == sizeof(words[word]) - 1){
+                printf("\n");
+            }
+        }
+    }
+
+    
     while((character = fgetc(text_input)) != (EOF)){
         
-        if(fseek(text_input, 2, SEEK_CUR)== -1){
+        if(fseek(text_input, 2, SEEK_CUR) == -1){
             break;
         }
         
@@ -81,9 +89,6 @@ int main(int argc, const char * argv[]) {
         fseek(text_input, -2, SEEK_CUR);
         
     }
-    
-
-    
     
     struct global global;
     struct packet packet;
