@@ -16,6 +16,7 @@
 #include <stddef.h>         // offsetof()
 #include <stdint.h>
 #include <errno.h>
+#include <ctype.h>
 
 #include "pcap_data.h"
 
@@ -72,12 +73,73 @@ int main(int argc, const char * argv[]) {
     // Read the given text file.
     while(!feof(text_input)){
         
-        for (int i = 0; i <= 4; i++){
+        // Get values for med_head.
+        // 0-5 are for Type, Version, Sequence, From, and To respectively
+        for (int i = 0; i <= 5; i++){
+            
+            // send to find_word and, if the word is there, return its index
             word_result = find_word(i, text_input);
+            
+            if (word_result == i){
+                int value;
+                
+                fscanf(text_input, "%d", &value);
+                
+                
+                switch (word_result) {
+                    case 0:
+                        printf("Type is: |%d|", value);
+                        if ((value > 3) || (value < 0)){
+                            printf("Error in Text-file. Type is from 0-3. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                            break;
+                    case 1:
+                        printf("Version is: |%d|", value);
+                        if (value != 1){
+                            printf("Error in Text-file. Version must be 1. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                            break;
+                    case 2:
+                        fread(&value, 1, 3, text_input);
+                        printf("Sequence is: |%d|", value);
+                        if ((value > 511) || (value < 0)){
+                            printf("Error in Text-file. Sequence must be from 0-511. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                            break;
+                    case 3:
+                        fread(&value, 1, 4, text_input);
+                        printf("From is: |%d|", value);
+                        if ((value > 9999) || (value < 0)){
+                            printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                            break;
+                    case 4:
+                        fread(&value, 1, 4, text_input);
+                        printf("From is: |%d|", value);
+                        if ((value > 9999) || (value < 0)){
+                            printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                    default:
+                        printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", argv[1]);
+                            break;
+                }
+            }
+            
+            // if find_word returns error, cleanly exit and tell the user
             if (word_result < 0){
                 printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", argv[1]);
                 exit_clean(pcap_out, text_input);
             }
+            
+
+            
+
+
         }
         
     }
@@ -310,7 +372,7 @@ int find_word(int chosen_array, FILE *text_input){
     for (word = 0; word < ARR_SIZE(given_array); word++){
         // Loop through each character in the word element
         
-        for (; character != sizeof(*given_array + word); character++){
+        for (character = 0; character != sizeof(*given_array + word); character++){
             input_char = fgetc(text_input);
             
             // if that character does not match the current word from the file
@@ -327,7 +389,7 @@ int find_word(int chosen_array, FILE *text_input){
         if (character > 0){
             input_char = fgetc(text_input);
             
-            printf("\nYour word is valid!\nThe value is: ");
+            printf("\nYour word is valid!\n");
             // Return the index for the correct word
             return word;
         }
