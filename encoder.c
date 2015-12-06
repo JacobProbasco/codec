@@ -10,9 +10,9 @@
 
 /// Definitions ///
 #define NUM_ARRAY_ELEM(a) (sizeof(a) / sizeof(*a))
-#define WORD_ARRAY word_array[chosen_array][chosen_word]
+#define WORD_ARRAY word_array[*chosen_array][*chosen_word]
 
-#define WORD_ELEMENTS (sizeof(word_array[chosen_array][chosen_word])/sizeof(*word_array[chosen_array][chosen_word])
+#define WORD_ELEMENTS (sizeof(word_array[*chosen_array][*chosen_word]))/sizeof(*word_array[*chosen_array][*chosen_word])
 
 #include <stdio.h>          // fileno()
 #include <string.h>         // memset() and strerror()
@@ -33,8 +33,8 @@ void set_IPv4(struct IPv4 *);
 void set_udp(struct UDP *);
 
 // Function to verify the command being passed
-int find_word(int, int, FILE *);
-int check_set_value(int, int, FILE *, FILE *, const char *arg[]);
+int find_word(int *, int *, FILE *);
+int check_set_value(int *, int *, FILE *, FILE *, const char *arg[], struct med_head *);
 void usage_error (const char *filename);    // print the proper usage of encoder.c
 void exit_clean(FILE *, FILE *);
 
@@ -70,7 +70,7 @@ int main(int argc, const char * argv[]) {
     }
     
     printf("DEBUG: Your two file locations are good.\nWho knows if they are the correct types of files. Here...We....GO...\n\n");
-/* GOOD CODE - ADD BACK
+
     struct global global;
     struct packet packet;
     struct ethernet ethernet;
@@ -103,73 +103,11 @@ int main(int argc, const char * argv[]) {
     
     // DEBUG Variables
     
-    med_head.type_seq_ver.version = 1; // always 1
-    med_head.type_seq_ver.squence = 1;
-    med_head.type_seq_ver.type = 1;
-    
-    // END DEBUG variables
-    
-    
-    // MEDITRICK HEADER
-    
-    ////STATUS
-    if (med_head.type_seq_ver.type == 0){
-        
-    }
-    
-    ////COMMAND
-    // Sends command to device
-    /// GET: STATUS(0), GPS(2)
-    /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
-    /// REPEAT(7)
-    /// RESERVED(4, 6)
-    if (med_head.type_seq_ver.type == 1){
-        if (cmnd.outgoing == 0){
-            printf("GET: STATUS(0)\n");
-        } else if (cmnd.outgoing == 2){
-            printf("GET: GPS(2)\n");
-        }
-        
-        else if (cmnd.outgoing == 1){
-            printf("SET: GLUSCOSE(1)\n");
-            
-        }
-        else if (cmnd.outgoing == 3){
-            printf("SET: CAPSACIAN(3)\n");
-        }
-        
-        else if (cmnd.outgoing == 5){
-            printf("OMORFINE(5)\n");
-        }
-        else if (cmnd.outgoing == 7){
-            printf("REPEAT(7)\n");
-        }
-        else if (cmnd.outgoing == 4 || cmnd.outgoing == 6){
-            printf("RESERVED\n");
-        }
-        else{
-            printf("Malformed Status\n");
-            exit(1);
-        }
-        
-    }
-    
-    ////GPS
-    if (med_head.type_seq_ver.type == 2){
-        
-    }
-    
-    ////MESSAGE
-    if (med_head.type_seq_ver.type == 3){
-        
-    }
-
-END GOOD CODE */
-    
 // READ AND PROCESS the given text file.
     
     // 0 is the mead_head. This will tell find_word what the next task is
-    int next_section = 0;
+    int next_section;
+    next_section = 0;
     int next_word = 0;
     int word_result = -3;
     // int section = -3;
@@ -178,8 +116,8 @@ END GOOD CODE */
 
         
         //  start with med_head
-        word_result = find_word(next_section, next_word, text_input);
-        check_set_value(word_result, next_section, text_input, pcap_out, argv);
+        word_result = find_word(&next_section, &next_word, text_input);
+        check_set_value(&next_section, &next_word, text_input, pcap_out, argv, &med_head);
 
         // Get values for med_head.
         // 0-5 are for Type, Version, Sequence, From, and To respectively
@@ -192,14 +130,15 @@ END GOOD CODE */
 
 }
 
-int find_word(int chosen_array, int chosen_word, FILE *text_input){
+int find_word(int *chosen_array, int *chosen_word, FILE *text_input){
     
     // Lists of possible valid words in Meditrick Text Files
     char word_array[5][8][15] = {
         { "Type: ", "Version: ", "Sequence: ", "From: ", "To: " },
         { "Battery: ", "Glucose: ", "Capsaicin: ", "Omorfine: " },
         { "GET_STATUS: ", "SET_GLUCOSE: ", "GET_GPS: ", "SET_CAPSAICIN: ", "RESERVED(4):","SET_OMORFINE: ", "RESERVED(6): ", "REPEAT: " },
-        { "Latitude: ", "Longitude: ", "Altitude: " }, { "Message: " }
+        { "Latitude: ", "Longitude: ", "Altitude: " },
+        { "Message: " }
     };
     
     // initial word is Type:
@@ -208,7 +147,7 @@ int find_word(int chosen_array, int chosen_word, FILE *text_input){
     int character = 0;
     
         // Loop through a given array, word by word
-        for (word = 0; word < NUM_ARRAY_ELEM(word_array[chosen_array]); word++){
+        for (word = *chosen_word; word < NUM_ARRAY_ELEM(word_array[*chosen_array]); word++){
             // Loop through each character in the word element
             for (character = 0; (character != (NUM_ARRAY_ELEM(WORD_ARRAY))); character++){
                 input_char = fgetc(text_input);
@@ -224,12 +163,12 @@ int find_word(int chosen_array, int chosen_word, FILE *text_input){
                     }
                 }
                 
-                if (word_array[chosen_array][chosen_word][character] != input_char){
+                if (WORD_ARRAY[character] != input_char){
                     return -2;
                 }
                 
-                if (word_array[chosen_array][chosen_word][character] == input_char){
-                    printf("%c", word_array[chosen_array][chosen_word][character]);
+                if (WORD_ARRAY[character] == input_char){
+                    printf("%c", WORD_ARRAY[character]);
                 }
             }
         }
@@ -240,7 +179,7 @@ int find_word(int chosen_array, int chosen_word, FILE *text_input){
 };
 
 /// FUNCTIONS
-int check_set_value(int word_result, int section, FILE *text_input, FILE *pcap_out, const char *arg[]) {
+int check_set_value(int *section, int *next_word, FILE *text_input, FILE *pcap_out, const char *arg[], struct med_head *func_med_head) {
     
     int value;
     //              printf("DEBUG: Tell-pre %ld\n", ftell(text_input));
@@ -248,53 +187,67 @@ int check_set_value(int word_result, int section, FILE *text_input, FILE *pcap_o
     printf(" is: |%d|\n", value);
     
     // Med_Head
-    switch (section){
-        // MED_HEAD
+    switch (*section){
+        // Cycle through the words in MED_HEAD
         case 0:
-            switch (word_result) {
+            switch (*next_word) {
                 // TYPE:
                 case 0:
                     // Account for errant values
                     if ((value > 3) || (value < 0)){
                         printf("Error in Text-file. Type is from 0-3. Exiting.\n");
                         exit_clean(pcap_out, text_input);
-                    }
-                    
-                    // Set value for storage to PCAP
-                    else {
                         
+                    } else {
+                        *next_word = 1;
+                        func_med_head->type_seq_ver.type = value;
                     }
                     break;
-                    // VERSION:
+                // VERSION:
                 case 1:
                     if (value != 1){
                         printf("Error in Text-file. Version must be 1. Exiting.\n");
                         exit_clean(pcap_out, text_input);
+                    }else {
+                        *next_word = 2;
+                        func_med_head->type_seq_ver.version = value;
                     }
                     break;
-                    // SEQUENCE:
+                // SEQUENCE:
                 case 2:
                     if ((value > 511) || (value < 0)){
                         printf("Error in Text-file. Sequence must be from 0-511. Exiting.\n");
                         exit_clean(pcap_out, text_input);
+                    }else {
+                        *next_word = 3;
+                        func_med_head->type_seq_ver.squence = value;
                     }
                     break;
-                    // FROM:
+                // FROM:
                 case 3:
                     if ((value > 9999) || (value < 0)){
                         printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
                         exit_clean(pcap_out, text_input);
+                    }else {
+                        *next_word = 4;
+                        func_med_head->from = value;
                     }
                     break;
-                    // TO:
+                // TO:
                 case 4:
                     if ((value > 9999) || (value < 0)){
                         printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
                         exit_clean(pcap_out, text_input);
+                    }else {
+                        // Reset for next array
+                        func_med_head->to = value;
+                        *next_word = 0;
+                        *section = func_med_head->type_seq_ver.type;
+
+                        // process the array defined by the type processed earlier.
+                        break;
                     }
-                    
-        }
-    
+            }
     // STATUS
         case 1:
     // COMMAND
@@ -305,7 +258,7 @@ int check_set_value(int word_result, int section, FILE *text_input, FILE *pcap_o
         case 4:;
     }
     
-    if (word_result < 0){
+    if (next_word < 0){
         printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", arg[1]);
         exit_clean(pcap_out, text_input);
     }
