@@ -65,21 +65,24 @@ int main(int argc, const char * argv[]) {
     
     // array of character arrays with the values for the default med_head
     char words[5][10] = { "Type: ", "Version: ", "Squence: ", "From: ", "To: " };
+    
+    enum reset_values{ match_found, word };
+    enum reset_values reset;
+    
     int line_count = 0;
     
-
-    
-    int reading = 1;
-    current_char = fgetc(text_input);
-    
-    while(reading){
+    // Read the given text file.
+    while(feof(text_input) == 0){
+        current_char = fgetc(text_input);
         line_count ++;
         
-        // conceptual for-loop for validating what type of line we are on in the file
-        // loop prints each [word] by its [character]
+        // Loop through words
         for (int word = 0; word < 5; word++){
+            // Loop through each character in words
             for (int letter = 0; letter != sizeof(words[word]); letter ++){
-                
+                if (words[word][letter] != current_char){
+                    
+                }
                 printf("%c", words[word][letter]);
                 
                 if (letter == sizeof(words[word]) - 1){
@@ -88,6 +91,8 @@ int main(int argc, const char * argv[]) {
                 
             }
         }
+        
+        
 /*
         if ((check_end > 0) && (current_char != '*')){
             check_end = 0;
@@ -98,8 +103,8 @@ int main(int argc, const char * argv[]) {
             }
         }
  */
-        // Get next character
-        current_char = fgetc(text_input);
+        
+// END WHILE-LOOP
     }
 /*
     if(fseek(text_input, 2, SEEK_CUR) == -1){

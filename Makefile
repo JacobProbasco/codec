@@ -5,7 +5,9 @@ CFLAGS+=-D_DARWIN_SOURCE
 
 .PHONY: clean debug
 
-codec: decoder.c encoder.c
+codec: 
+	./decoder.c
+	./encoder.c
 
 debug: CFLAGS+=-g
 debug: codec
