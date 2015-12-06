@@ -83,8 +83,8 @@ int main(int argc, const char * argv[]) {
             if (word_result == i){
                 int value;
                 
+                printf("Tell-pre %ld\n", ftell(text_input));
                 fscanf(text_input, "%d", &value);
-                
                 
                 switch (word_result) {
                     case 0:
@@ -128,6 +128,9 @@ int main(int argc, const char * argv[]) {
                         printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", argv[1]);
                             break;
                 }
+                // Go past new-line.
+                fscanf(text_input, "%42[^\n]", (char*)NULL);
+                fseek(text_input, sizeof(char), SEEK_CUR);
             }
             
             // if find_word returns error, cleanly exit and tell the user
@@ -136,7 +139,7 @@ int main(int argc, const char * argv[]) {
                 exit_clean(pcap_out, text_input);
             }
             
-
+            // Seek past new line
             
 
 
