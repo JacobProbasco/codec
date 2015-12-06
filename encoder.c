@@ -67,20 +67,21 @@ int main(int argc, const char * argv[]) {
     
     // array of character arrays with the values for the default med_head
     
-    int line_count = 0;
+    int word_result = -2;
     
     // Read the given text file.
-    while(feof(text_input) == 0){
-        line_count ++;
+    while(!feof(text_input)){
         
         for (int i = 0; i <= 4; i++){
-            if (find_word(0, text_input) ){
-                printf("Invalid Data in Meditrick Header. Exiting.");
+            word_result = find_word(i, text_input);
+            if (word_result < 0){
+                printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", argv[1]);
+                exit_clean(pcap_out, text_input);
             }
-            
         }
         
     }
+    
 /* BEGIN GOOD CODE - PUT BACK
     struct global global;
     struct packet packet;
@@ -289,11 +290,14 @@ int main(int argc, const char * argv[]) {
 
 int find_word(int chosen_array, FILE *text_input){
     
-    // Lists of possible words
-    char words[5][10] = { "Type:", "Version:", "Squence:", "From:", "To:" };
-    char CMND_words[8][13] = { "GET_STATUS", "SET_GLUCOSE", "GET_GPS", "SET_CAPSAICIN", "RESERVED(4)","SET_OMORFINE", "RESERVED(6)", "REPEAT" };
-
-    void *word_array_list[2] = { &words[0], &CMND_words[0] };
+    // Lists of possible valid words in Meditrick Text Files
+    char med_head[5][10] = { "Type: ", "Version: ", "Squence: ", "From: ", "To: " };
+    char stat[4][11] = { "Battery: ", "Glucose: ", "Capsaicin: ", "Omorfine: " };
+    char cmnd[8][15] = { "GET_STATUS: ", "SET_GLUCOSE: ", "GET_GPS: ", "SET_CAPSAICIN: ", "RESERVED(4):","SET_OMORFINE: ", "RESERVED(6): ", "REPEAT: " };
+    char gps[3][11] = { "Latitude: ", "Longitude: ", "Altitude: " };
+    char message[1][9] = { "Message: " };
+    
+    void *word_array_list[5] = { &med_head[0], &stat[0], &cmnd[0], &gps[0], &message[0]};
     char *given_array = &*word_array_list[chosen_array];
     
     char input_char;
@@ -308,12 +312,12 @@ int find_word(int chosen_array, FILE *text_input){
         
         for (; character != sizeof(*given_array + word); character++){
             input_char = fgetc(text_input);
-            // if that character does not match the current word from the file
             
+            // if that character does not match the current word from the file
             if (*(given_array + word + character) != input_char){
-                character = 0;
                 // Rewind how many characters we've tried
                 fseek(text_input, -(long)character, SEEK_CUR);
+                return -1;
             }
             
             printf("%c", *(given_array + word + character));
@@ -321,9 +325,11 @@ int find_word(int chosen_array, FILE *text_input){
         }
         
         if (character > 0){
-            printf("Word not valid\n");
-            // Return error code
-            return -1;
+            input_char = fgetc(text_input);
+            
+            printf("\nYour word is valid!\nThe value is: ");
+            // Return the index for the correct word
+            return word;
         }
         
     }
