@@ -70,80 +70,6 @@ int main(int argc, const char * argv[]) {
     }
     
     printf("DEBUG: Your two file locations are good.\nWho knows if they are the correct types of files. Here...We....GO...\n\n");
-    
-    // array of character arrays with the values for the default med_head
-    
-    int word_result = -2;
-    
-    // Read the given text file.
-    while(!feof(text_input)){
-        
-        // Get values for med_head.
-        // 0-5 are for Type, Version, Sequence, From, and To respectively
-        for (int i = 0; i < 5; i++){
-            //  find_word and, if the word is there, return its index
-            word_result = find_word(0, i, text_input);
-            
-            if (word_result == i){
-                int value;
-                
-//              printf("DEBUG: Tell-pre %ld\n", ftell(text_input));
-                fscanf(text_input, "%d", &value);
-                printf(" is: |%d|\n", value);
-                
-                // MED_HEAD
-                switch (word_result) {
-                    // TYPE:
-                    case 0:
-                        if ((value > 3) || (value < 0)){
-                            printf("Error in Text-file. Type is from 0-3. Exiting.\n");
-                            exit_clean(pcap_out, text_input);
-                        }
-                            break;
-                    // VERSION:
-                    case 1:
-                        if (value != 1){
-                            printf("Error in Text-file. Version must be 1. Exiting.\n");
-                            exit_clean(pcap_out, text_input);
-                        }
-                            break;
-                    // SEQUENCE:
-                    case 2:
-                        if ((value > 511) || (value < 0)){
-                            printf("Error in Text-file. Sequence must be from 0-511. Exiting.\n");
-                            exit_clean(pcap_out, text_input);
-                        }
-                            break;
-                    // FROM:
-                    case 3:
-                        if ((value > 9999) || (value < 0)){
-                            printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
-                            exit_clean(pcap_out, text_input);
-                        }
-                            break;
-                    // TO:
-                    case 4:
-                        if ((value > 9999) || (value < 0)){
-                            printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
-                            exit_clean(pcap_out, text_input);
-                        }
-                }
-                // Go past new-line.
-                fscanf(text_input, "%42[^\n]", (char*)NULL);
-                fseek(text_input, sizeof(char), SEEK_CUR);
-            }
-            
-            // if find_word returns error, cleanly exit and tell the user
-            if (word_result < 0){
-                printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", argv[1]);
-                exit_clean(pcap_out, text_input);
-            }
-
-        }
-        
-    }
-    
-/* BEGIN GOOD CODE - PUT BACK
     struct global global;
     struct packet packet;
     struct ethernet ethernet;
@@ -239,113 +165,77 @@ int main(int argc, const char * argv[]) {
     
     fclose(pcap_out);
     fclose(text_input);
-*/
-    /*
-     for(int i = 0; i < 6; i++){
-     printf("\n%p", &net_data + i);
-     printf("\n%d", net_data[i]);
-     }
-     
-     set_global(net_data);
-     */
     
-    /*
-     unsigned int default_PCAP_header[24] = { '0xD4', '0xC3', 0xB2, 0xA1, 0x02, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00};
-     
-     unsigned int default_PCAP_frame[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3A, 0x00, 0x00, 0x00, 0x3A, 0x00, 0x00, 0x00};
-     
-     unsigned int default_network_frame[42] = { 0xA6, 0x39, 0x68, 0xBE, 0xA9, 0xED, 0xC5, 0x6C, 0xBA, 0x61, 0x59, 0xEC, 0x08, 0x00, 0x45, 0x00, 0x00, 0x2C, 0x12, 0x34, 0x40, 0x00, 0xFF, 0x11, 0x53, 0x71, 0x0A, 0x00, 0x01, 0x0C, 0x0A, 0x01, 0x01, 0x0F, 0x04, 0x35, 0x05, 0x39, 0x00, 0x18, 0xAD, 0xB5 };
-     
-     for (int i = 0; i < 24; i++){
-     fwrite(default_PCAP_header+i, sizeof(*default_PCAP_header), 2, pcap_out);
-     printf("%d ", default_PCAP_header[i]);
-     }
-     
-     for (int i=0; i < 16; i++){
-     fwrite(default_PCAP_frame+i, sizeof(*default_PCAP_frame), 1, pcap_out);
-     }
-     
-     for (int i=0; i < 46; i++){
-     fwrite(default_network_frame+i, sizeof(*default_network_frame), 1, pcap_out);
-     }
-     */
+    int word_result = -2;
+    
+// READ AND PROCESS the given text file.
+    while(!feof(text_input)){
+        
+        // Get values for med_head.
+        // 0-5 are for Type, Version, Sequence, From, and To respectively
+        for (int i = 0; i < 5; i++){
+            //  find_word and, if the word is there, return its index
+            word_result = find_word(0, i, text_input);
+            
+            if (word_result == i){
+                int value;
+                
+//              printf("DEBUG: Tell-pre %ld\n", ftell(text_input));
+                fscanf(text_input, "%d", &value);
+                printf(" is: |%d|\n", value);
+                
+                // MED_HEAD
+                switch (word_result) {
+                    // TYPE:
+                    case 0:
+                        if ((value > 3) || (value < 0)){
+                            printf("Error in Text-file. Type is from 0-3. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                            break;
+                    // VERSION:
+                    case 1:
+                        if (value != 1){
+                            printf("Error in Text-file. Version must be 1. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                            break;
+                    // SEQUENCE:
+                    case 2:
+                        if ((value > 511) || (value < 0)){
+                            printf("Error in Text-file. Sequence must be from 0-511. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                            break;
+                    // FROM:
+                    case 3:
+                        if ((value > 9999) || (value < 0)){
+                            printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                            break;
+                    // TO:
+                    case 4:
+                        if ((value > 9999) || (value < 0)){
+                            printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
+                            exit_clean(pcap_out, text_input);
+                        }
+                }
+                // Go past new-line.
+                fscanf(text_input, "%42[^\n]", (char*)NULL);
+                fseek(text_input, sizeof(char), SEEK_CUR);
+            }
+            
+            // if find_word returns error, cleanly exit and tell the user
+            if (word_result < 0){
+                printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", argv[1]);
+                exit_clean(pcap_out, text_input);
+            }
 
-    /*
-     pcap_t *pd;
-     pcap_dumper_t *pdumper;
-     
-     pd = pcap_open_dead(DLT_EN10MB, 65535 );
-     
-     pdumper = pcap_dump_open(pd, "/tmp/capture.pcap");
-     if(pdumper==NULL){
-     fprintf(stderr,"\nError opening output file\n");
-     return -1;
-     }
-     
-     pcap_dump(pdumper);
-     
-     pcap_close(pd);
-     pcap_dump_close(pdumper);
-     */
-    
-    /*
-     // Meditrik header. - Maximum size of med_header is 24B
-     struct {
-     // Account for order of bits in struct.
-     
-     uint16_t length:16;
-     uint32_t from:32;
-     uint32_t to:32;
-     }med_head;
-     
-     med_head.nthosts = 0x
-     // Meditrik Variable Portion - Will be one of the following
-     
-     /// 0 - Device Status - 28B
-     struct {
-     union {
-     char batt[8];
-     double battery;
-     };
-     // IEEE 754 double-precision decimal (binary64)
-     uint16_t gluc;         // 0-65000
-     uint16_t caps;         // 0-65000
-     uint16_t omor;         // 0-65000
-     }status;
-     
-     /// 1 - Command Instruction - 8B
-     struct {
-     uint16_t out;
-     // Sends command to device
-     /// GET: STATUS(0), GPS(2)
-     /// SET: GLUSCOSE(1), CAPSACIAN(3), OMORFINE(5)
-     /// REPEAT(7)
-     /// RESERVED(4, 6)
-     uint16_t param;
-     // Parameters for given SET Commands
-     }cmnd;
-     
-     /// 2 - GPS Data - 40B
-     struct {
-     union {
-     char longi[8];
-     double longitude;
-     };
-     // binary64 - degrees, can be negative
-     union {
-     char latit[8];
-     double latitude;
-     // binary64 - degrees, can be negative
-     };
-     union {
-     char alti[4];
-     float altitude;
-     // binary32
-     };
-     }gps;
-     
-     }
-     */
+        }
+        
+    }
+
     return 0;
 }
 
