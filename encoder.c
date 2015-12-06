@@ -7,7 +7,12 @@
 //  And now for some fun with mostly non-delimited text!
 
 #define _BSD_SOURCE
-#define ARR_SIZE(a) (sizeof(a) / sizeof(*a))
+
+/// Definitions ///
+#define NUM_ARRAY_ELEM(a) (sizeof(a) / sizeof(*a))
+#define WORD_ARRAY word_array[chosen_array][chosen_word]
+
+#define WORD_ELEMENTS (sizeof(word_array[chosen_array][chosen_word])/sizeof(*word_array[chosen_array][chosen_word])
 
 #include <stdio.h>          // fileno()
 #include <string.h>         // memset() and strerror()
@@ -76,8 +81,7 @@ int main(int argc, const char * argv[]) {
         // Get values for med_head.
         // 0-5 are for Type, Version, Sequence, From, and To respectively
         for (int i = 0; i < 5; i++){
-            
-            // send to find_word and, if the word is there, return its index
+            //  find_word and, if the word is there, return its index
             word_result = find_word(0, i, text_input);
             
             if (word_result == i){
@@ -134,10 +138,6 @@ int main(int argc, const char * argv[]) {
                 printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", argv[1]);
                 exit_clean(pcap_out, text_input);
             }
-            
-            // Seek past new line
-            
-
 
         }
         
@@ -367,16 +367,20 @@ int find_word(int chosen_array, int chosen_word, FILE *text_input){
     int character = 0;
     
     // Loop through a given array, word by word
-    for (word = 0; word < ARR_SIZE(word_array[chosen_array]); word++){
+    for (word = 0; word < NUM_ARRAY_ELEM(word_array[chosen_array]); word++){
+        
         // Loop through each character in the word element
-        for (character = 0; (character != sizeof(word_array[chosen_array][chosen_word])/sizeof(*word_array[chosen_array][chosen_word])); character++){
+        for (character = 0; (character != (NUM_ARRAY_ELEM(WORD_ARRAY))); character++){
             input_char = fgetc(text_input);
-            
-            //
+
+            // if encounter colon
             if ((character >= 2) && (input_char == ':')){
                 input_char = fgetc(text_input);
+                
+                // and the next char after is a space
                 if (input_char == ' '){
-//                  printf("\nDEBUG: Your word is valid!\n");
+                    
+                    // return the word's index to main
                     return chosen_word;
                 }
             }
