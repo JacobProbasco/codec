@@ -98,7 +98,6 @@ int main(int argc, const char * argv[]) {
                             break;
                     // VERSION:
                     case 1:
-                        printf("Version is: |%d|", value);
                         if (value != 1){
                             printf("Error in Text-file. Version must be 1. Exiting.\n");
                             exit_clean(pcap_out, text_input);
@@ -106,8 +105,6 @@ int main(int argc, const char * argv[]) {
                             break;
                     // SEQUENCE:
                     case 2:
-                        fread(&value, 1, 3, text_input);
-                        printf("Sequence is: |%d|", value);
                         if ((value > 511) || (value < 0)){
                             printf("Error in Text-file. Sequence must be from 0-511. Exiting.\n");
                             exit_clean(pcap_out, text_input);
@@ -115,8 +112,6 @@ int main(int argc, const char * argv[]) {
                             break;
                     // FROM:
                     case 3:
-                        fread(&value, 1, 4, text_input);
-                        printf("From is: |%d|", value);
                         if ((value > 9999) || (value < 0)){
                             printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
                             exit_clean(pcap_out, text_input);
@@ -124,15 +119,10 @@ int main(int argc, const char * argv[]) {
                             break;
                     // TO:
                     case 4:
-                        fread(&value, 1, 4, text_input);
-                        printf("From is: |%d|", value);
                         if ((value > 9999) || (value < 0)){
                             printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
                             exit_clean(pcap_out, text_input);
                         }
-                    default:
-                        printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", argv[1]);
-                            break;
                 }
                 // Go past new-line.
                 fscanf(text_input, "%42[^\n]", (char*)NULL);
@@ -383,7 +373,7 @@ int find_word(int chosen_array, int chosen_word, FILE *text_input){
             input_char = fgetc(text_input);
             
             //
-            if ((character > 3) && (input_char == ':')){
+            if ((character >= 2) && (input_char == ':')){
                 input_char = fgetc(text_input);
                 if (input_char == ' '){
 //                  printf("\nDEBUG: Your word is valid!\n");
