@@ -27,7 +27,7 @@ void set_ethernet(struct ethernet *);
 void set_IPv4(struct IPv4 *);
 void set_udp(struct UDP *);
 
-int find_word(int chosen_array, FILE *text_input);
+int find_word(int chosen_array, int chosen_word, FILE *text_input);
 void usage_error (const char *filename);    // print the proper usage of encoder.c
 void exit_clean(FILE *, FILE *);
 
@@ -75,25 +75,28 @@ int main(int argc, const char * argv[]) {
         
         // Get values for med_head.
         // 0-5 are for Type, Version, Sequence, From, and To respectively
-        for (int i = 0; i <= 5; i++){
+        for (int i = 0; i < 5; i++){
             
             // send to find_word and, if the word is there, return its index
-            word_result = find_word(i, text_input);
+            word_result = find_word(0, i, text_input);
             
             if (word_result == i){
                 int value;
                 
-                printf("Tell-pre %ld\n", ftell(text_input));
+//              printf("DEBUG: Tell-pre %ld\n", ftell(text_input));
                 fscanf(text_input, "%d", &value);
+                printf(" is: |%d|\n", value);
                 
+                // MED_HEAD
                 switch (word_result) {
+                    // TYPE:
                     case 0:
-                        printf("Type is: |%d|", value);
                         if ((value > 3) || (value < 0)){
                             printf("Error in Text-file. Type is from 0-3. Exiting.\n");
                             exit_clean(pcap_out, text_input);
                         }
                             break;
+                    // VERSION:
                     case 1:
                         printf("Version is: |%d|", value);
                         if (value != 1){
@@ -101,6 +104,7 @@ int main(int argc, const char * argv[]) {
                             exit_clean(pcap_out, text_input);
                         }
                             break;
+                    // SEQUENCE:
                     case 2:
                         fread(&value, 1, 3, text_input);
                         printf("Sequence is: |%d|", value);
@@ -109,6 +113,7 @@ int main(int argc, const char * argv[]) {
                             exit_clean(pcap_out, text_input);
                         }
                             break;
+                    // FROM:
                     case 3:
                         fread(&value, 1, 4, text_input);
                         printf("From is: |%d|", value);
@@ -117,6 +122,7 @@ int main(int argc, const char * argv[]) {
                             exit_clean(pcap_out, text_input);
                         }
                             break;
+                    // TO:
                     case 4:
                         fread(&value, 1, 4, text_input);
                         printf("From is: |%d|", value);
@@ -353,48 +359,54 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-int find_word(int chosen_array, FILE *text_input){
+int find_word(int chosen_array, int chosen_word, FILE *text_input){
     
     // Lists of possible valid words in Meditrick Text Files
-    char med_head[5][10] = { "Type: ", "Version: ", "Squence: ", "From: ", "To: " };
-    char stat[4][11] = { "Battery: ", "Glucose: ", "Capsaicin: ", "Omorfine: " };
-    char cmnd[8][15] = { "GET_STATUS: ", "SET_GLUCOSE: ", "GET_GPS: ", "SET_CAPSAICIN: ", "RESERVED(4):","SET_OMORFINE: ", "RESERVED(6): ", "REPEAT: " };
-    char gps[3][11] = { "Latitude: ", "Longitude: ", "Altitude: " };
-    char message[1][9] = { "Message: " };
     
-    void *word_array_list[5] = { &med_head[0], &stat[0], &cmnd[0], &gps[0], &message[0]};
-    char *given_array = &*word_array_list[chosen_array];
+    char word_array[5][8][15] = {
+        { "Type: ", "Version: ", "Sequence: ", "From: ", "To: " },
+        { "Battery: ", "Glucose: ", "Capsaicin: ", "Omorfine: " },
+        { "GET_STATUS: ", "SET_GLUCOSE: ", "GET_GPS: ", "SET_CAPSAICIN: ", "RESERVED(4):","SET_OMORFINE: ", "RESERVED(6): ", "REPEAT: " },
+        { "Latitude: ", "Longitude: ", "Altitude: " }, { "Message: " }
+    };
+    
     
     char input_char;
-    
-    
+
     int word;
     int character = 0;
     
     // Loop through a given array, word by word
-    for (word = 0; word < ARR_SIZE(given_array); word++){
+    for (word = 0; word < ARR_SIZE(word_array[chosen_array]); word++){
         // Loop through each character in the word element
-        
-        for (character = 0; character != sizeof(*given_array + word); character++){
+        for (character = 0; (character != sizeof(word_array[chosen_array][chosen_word])/sizeof(*word_array[chosen_array][chosen_word])); character++){
             input_char = fgetc(text_input);
             
+            //
+            if ((character > 3) && (input_char == ':')){
+                input_char = fgetc(text_input);
+                if (input_char == ' '){
+//                  printf("\nDEBUG: Your word is valid!\n");
+                    return chosen_word;
+                }
+            }
+            
+            if (word_array[chosen_array][chosen_word][character] != input_char){
+                return -2;
+            }
+            
+            if (word_array[chosen_array][chosen_word][character] == input_char){
+                printf("%c", word_array[chosen_array][chosen_word][character]);
+            }
+/* OLD CODE for cycling through all options
             // if that character does not match the current word from the file
-            if (*(given_array + word + character) != input_char){
+            if (word_array[chosen_array][chosen_word][character] != input_char){
                 // Rewind how many characters we've tried
                 fseek(text_input, -(long)character, SEEK_CUR);
                 return -1;
             }
+END OLD CODE */
             
-            printf("%c", *(given_array + word + character));
-            
-        }
-        
-        if (character > 0){
-            input_char = fgetc(text_input);
-            
-            printf("\nYour word is valid!\n");
-            // Return the index for the correct word
-            return word;
         }
         
     }
