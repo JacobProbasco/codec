@@ -64,11 +64,10 @@ int main(int argc, const char * argv[]) {
     current_char = fgetc(text_input);
     
     // array of character arrays with the values for the default med_head
-    char words[5][10] = { "Type:", "Version:", "Squence:", "From:", "To:" };
-    char CMND_words[8][ = { "GET_STATUS", "SET_GLUCOSE", "GET_GPS", "SET_CAPSAICIN", "RESERVED(4)","SET_OMORFINE", "RESERVED(6)", "REPEAT" };
+    char words[5][10] = { "Type: ", "Version: ", "Squence: ", "From: ", "To: " };
     
-    enum word_found{ true, false };
-    enum word_found word_found;
+    enum reset_values{ match_found, word };
+    enum reset_values reset;
     
     int line_count = 0;
     
@@ -79,10 +78,7 @@ int main(int argc, const char * argv[]) {
         
         // Loop through words
         for (int word = 0; word < 5; word++){
-            // Resets each time a word is excluded
-            word_found = false;
-            
-            // Loop through each character in the words
+            // Loop through each character in words
             for (int letter = 0; letter != sizeof(words[word]); letter ++){
                 if (words[word][letter] != current_char){
                     
@@ -92,8 +88,8 @@ int main(int argc, const char * argv[]) {
                 if (letter == sizeof(words[word]) - 1){
                     printf("\n");
                 }
+                
             }
-            
         }
         
         
