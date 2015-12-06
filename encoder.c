@@ -60,36 +60,56 @@ int main(int argc, const char * argv[]) {
     
     // Array of pointers for Network data structure
     
-    char character;
-    character = fgetc(text_input);
+    char current_char;
+    current_char = fgetc(text_input);
     
     // array of character arrays with the values for the default med_head
     char words[5][10] = { "Type: ", "Version: ", "Squence: ", "From: ", "To: " };
+    int line_count = 0;
     
-    // conceptual for-loop for validating what type of line we are on in the file
-    // loop prints each [word] by its [character]
-    for (int word = 0; word < 5; word++){
-        for (int character = 0; character != sizeof(words[word]); character ++){
-            printf("%c", words[word][character]);
-            if (character == sizeof(words[word]) - 1){
-                printf("\n");
-            }
-        }
-    }
 
     
-    while((character = fgetc(text_input)) != (EOF)){
+    int reading = 1;
+    current_char = fgetc(text_input);
+    
+    while(reading){
+        line_count ++;
         
-        if(fseek(text_input, 2, SEEK_CUR) == -1){
-            break;
+        // conceptual for-loop for validating what type of line we are on in the file
+        // loop prints each [word] by its [character]
+        for (int word = 0; word < 5; word++){
+            for (int letter = 0; letter != sizeof(words[word]); letter ++){
+                
+                printf("%c", words[word][letter]);
+                
+                if (letter == sizeof(words[word]) - 1){
+                    printf("\n");
+                }
+                
+            }
         }
-        
-        printf("%c\n", character);
-        
-        fseek(text_input, -2, SEEK_CUR);
-        
+/*
+        if ((check_end > 0) && (current_char != '*')){
+            check_end = 0;
+        }else if ((current_char == '*') && (char_count > 7)){
+            check_end++;
+            if (check_end >= 7){
+                printf("Text Error: ******* u");
+            }
+        }
+ */
+        // Get next character
+        current_char = fgetc(text_input);
+    }
+/*
+    if(fseek(text_input, 2, SEEK_CUR) == -1){
+        break;
     }
     
+    printf("%c\n", character);
+    
+    fseek(text_input, -2, SEEK_CUR);
+*/
     struct global global;
     struct packet packet;
     struct ethernet ethernet;
