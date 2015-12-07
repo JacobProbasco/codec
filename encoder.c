@@ -103,9 +103,8 @@ int main(int argc, const char * argv[]) {
     struct cmnd cmnd;
     struct gps gps;
     
-    // DEBUG Variables
     
-    // READ AND PROCESS the given text file.
+// READ AND PROCESS the given text file.
     
     // 0 is the mead_head. This will tell find_word what the next task is
     int next_section;
@@ -409,11 +408,13 @@ int check_set_value(int *section, int *next_word, FILE *text_input, FILE *pcap_o
     }
     
     // Go past new-line.
-    if (feof(text_input)){
-        printf("TextFile Completely Read.\n", arg[1]);
-        exit_clean(pcap_out, text_input);
-    };
-    fscanf(text_input, "%42[^\n]", (char*)NULL);
+    char *value_character;
+    if ((fscanf(text_input, "%42[^\n]", value_character)) == EOF){
+        printf("TextFile %s Completely Read.\n", arg[1]);
+        
+        return -13; // My lucky number?
+    }
+
     fseek(text_input, sizeof(char), SEEK_CUR);
     
     return 0;
