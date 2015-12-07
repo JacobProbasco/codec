@@ -145,25 +145,25 @@ int main(int argc, char *argv[]){
     
 // GPS Data Packets
     if (med_head.type_seq_ver.type == 2){
-        fread(&gps.latit, sizeof(gps.latit), 1, pcap);
-        printf("Latitude: is %2.9f ", gps.latitude);
-        if ((int)gps.latitude >=0){
+        fread(&gps.latitude.latit, sizeof(gps.latitude.latit), 1, pcap);
+        printf("Latitude: is %2.9f ", gps.latitude.latitude);
+        if ((int)gps.latitude.latitude >=0){
             printf("deg. N\n");
         } else {
             printf("deg. S\n");
         }
         
-        fread(&gps.longi, sizeof(gps.longi), 1, pcap);
-        printf("Longi: is %2.9f ", gps.longitude);
+        fread(&gps.longitude.longitude, sizeof(gps.longitude.longitude), 1, pcap);
+        printf("Longi: is %2.9f ", gps.longitude.longitude);
         
-        if ((int)gps.longitude >= 0 && (int)gps.longitude <= 180){
+        if ((int)gps.longitude.longitude >= 0 && (int)gps.longitude.longitude <= 180){
             printf("deg. W\n");
         } else {
             printf("deg. E\n");
         }
         
-        fread(&gps.alti, sizeof(gps.alti), 1, pcap);
-        printf("Altitude: is %.2f ft.\n", (gps.altitude * 6));
+        fread(&gps.altitude.altitude, sizeof(gps.altitude.altitude), 1, pcap);
+        printf("Altitude: is %.2f ft.\n", (gps.altitude.altitude * 6));
         
     }
     
