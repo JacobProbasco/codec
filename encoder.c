@@ -36,7 +36,7 @@ void set_udp(struct UDP *);
 
 // Function to verify the command being passed
 int find_word(int *, int *, FILE *);
-int check_set_value(int *, int *, FILE *, FILE *, const char *arg[], struct med_head *, struct status *, struct cmnd *, struct gps *);
+int check_set_value(int *, int *, FILE *, FILE *, const char *arg[], struct med_head *, struct status *, struct cmnd *);
 void usage_error (const char *filename);    // print the proper usage of encoder.c
 void exit_clean(FILE *, FILE *);
 
@@ -101,7 +101,6 @@ int main(int argc, const char * argv[]) {
     struct med_head med_head;
     struct status status;
     struct cmnd cmnd;
-    struct gps gps;
     
     
 // READ AND PROCESS the given text file.
@@ -110,15 +109,14 @@ int main(int argc, const char * argv[]) {
     int next_section;
     next_section = 0;
     int next_word = 0;
-    int word_result = -3;
     // int section = -3;
     
     while(!feof(text_input)){
         
         
         //  start with med_head
-        word_result = find_word(&next_section, &next_word, text_input);
-        check_set_value(&next_section, &next_word, text_input, pcap_out, argv, &med_head, &status, &cmnd, &gps);
+        find_word(&next_section, &next_word, text_input);
+        check_set_value(&next_section, &next_word, text_input, pcap_out, argv, &med_head, &status, &cmnd);
         
         // Get values for med_head.
         // 0-5 are for Type, Version, Sequence, From, and To respectively
@@ -150,7 +148,7 @@ int find_word(int *chosen_array, int *chosen_word, FILE *text_input){
     int character = 0;
     
     // Loop through a given array, word by word
-    for (word = *chosen_word; word < NUM_ARRAY_ELEM(word_array[*chosen_array]); word++){
+    for (word = *chosen_word; word < (int)NUM_ARRAY_ELEM(word_array[*chosen_array]); word++){
         // Loop through each character in the word element
         for (character = 0; character != WORD_ELEMENTS; character++){
             input_char = fgetc(text_input);
@@ -180,7 +178,7 @@ int find_word(int *chosen_array, int *chosen_word, FILE *text_input){
     return -2;
 };
 
-int check_set_value(int *section, int *next_word, FILE *text_input, FILE *pcap_out, const char *arg[], struct med_head *func_med_head, struct status *func_status, struct cmnd *func_cmd, struct gps *func_gps) {
+int check_set_value(int *section, int *next_word, FILE *text_input, FILE *pcap_out, const char *arg[], struct med_head *func_med_head, struct status *func_status, struct cmnd *func_cmd) {
     int value = 0;
     
 //// MED_HEAD ////////////////////
@@ -402,14 +400,14 @@ int check_set_value(int *section, int *next_word, FILE *text_input, FILE *pcap_o
             }
         }
 
-    if (next_word < 0){
+    if (*next_word < 0){
         printf("Invalid Data in Meditrick Header Portion of %s. Exiting.\n", arg[1]);
         exit_clean(pcap_out, text_input);
     }
     
     // Go past new-line.
-    char *value_character;
-    if ((fscanf(text_input, "%42[^\n]", value_character)) == EOF){
+    char *value_character = NULL;
+	if ((fscanf(text_input, "%42[^\n]", value_character)) == EOF){
         printf("TextFile %s Completely Read.\n", arg[1]);
         
         return -13; // My lucky number?
