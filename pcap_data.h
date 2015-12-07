@@ -98,11 +98,12 @@ struct med_head{
 
 /// 0 - Device Status - 28B
 struct status{
+    // 64 bit (8 bytes)
     union {
         char batt[8];
         double battery;
     };
-    // IEEE 754 double-precision decimal (binary64)
+        // IEEE 754 double-precision decimal (binary64)
     uint16_t gluc;         // 0-65000
     uint16_t caps;         // 0-65000
     uint16_t omor;         // 0-65000
@@ -121,22 +122,29 @@ struct cmnd{
 }cmnd;
 
 /// 2 - GPS Data - 40B
+
 struct gps{
-    union {
+    union longitude{
         char longi[8];
         double longitude;
-    };
+    }longitude;
     // binary64 - degrees, can be negative
-    union {
+    union latitude{
         char latit[8];
         double latitude;
         // binary64 - degrees, can be negative
-    };
-    union {
+    }latitude;
+    union altitude{
         char alti[4];
         float altitude;
         // binary32
-    };
+    }altitude;
 }gps;
+
+struct gps_all{
+    union longitude longertude;
+    union latitude latertude;
+    union altitude altimetertude;
+}gps_all;
 
 #endif /* packet_h */
