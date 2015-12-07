@@ -139,9 +139,8 @@ int find_word(int *chosen_array, int *chosen_word, FILE *text_input){
     // Lists of possible valid words in Meditrick Text Files
     char word_array[5][8][16] = {
         { "Type: ", "Version: ", "Sequence: ", "From: ", "To: " },
-        { "Battery: ", "Glucose: ", "Capsaicin: ", "Omorfine: " },
         { "GET_STATUS: 0", "SET_GLUCOSE: 1", "GET_GPS: 2", "SET_CAPSAICIN: 3", "RESERVED: 4", "SET_OMORFINE: 5", "RESERVED: 6", "REPEAT: 7" },
-        
+        { "Battery: ", "Glucose: ", "Capsaicin: ", "Omorfine: " },
         { "Latitude: ", "Longitude: ", "Altitude: " },
         { "Message: " }
     };
@@ -242,10 +241,10 @@ int check_set_value(int *section, int *next_word, FILE *text_input, FILE *pcap_o
                     printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
                     exit_clean(pcap_out, text_input);
                 }else {
-                    // Reset for next array
                     func_med_head->to = value;
-                    *next_word = 0;
                     
+                    // Reset for next array
+                    *next_word = 0;
                     // Go to the array for the type num provided.
                     *section = func_med_head->type_seq_ver.type;
                     
@@ -256,99 +255,20 @@ int check_set_value(int *section, int *next_word, FILE *text_input, FILE *pcap_o
         }
     }
     
-/////// DEVICE_STATUS ////////////////////
-    if (*section == 1) {
-        // Follows these four in order unless error found.
-        switch (*next_word){
-                
-        // BATTERY_STATUS
-            case 0:
-                // Get, store, and then display battery status from union battery
-                fscanf(text_input, ": is  |%lf|\n", &func_status->battery);
-                printf(": is %f", (func_status->battery)/100);
-                
-                if ((func_status->battery / 100) < 0 || (func_status->battery / 100) > 100){
-                    printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
-                    exit_clean(pcap_out, text_input);
-                }else {
-                    
-                    // Set for next array to process
-                    *next_word = 1;
-                    
-                    break;
-                }
-                
-        // GLUCOSE_STATUS
-            case 1:
-                fscanf(text_input, "%d", &value);
-                printf(" is: |%d|\n", value);
-                value = htons(value);
-                
-                if ((value > 65000) || (value < 0)){
-                    printf("Error in Text-file. Glucose must be set in the range of 0-65000. Exiting.\n");
-                    exit_clean(pcap_out, text_input);
-                } else {
-                    // Reset for next array
-                    
-                    func_status->gluc = value;
-                    *next_word = 2;
-                    // process the array defined by the type processed earlier.
-                    break;
-                }
-                
-        // CAPSACIAN_STATUS
-            case 2:
-                fscanf(text_input, "%d", &value);
-                printf(" is: |%d|\n", value);
-                value = htons(value);
-                
-                if ((value > 65000) || (value < 0)){
-                    printf("Error in Text-file. Capsacian must be set in the range of 0-65000. Exiting.\n");
-                    exit_clean(pcap_out, text_input);
-                }else {
-                    // Reset for next array
-                    func_status->caps = value;
-                    *next_word = 3;
-                    break;
-                }
-                
-        // OMORFINE_STATUS
-            case 3:
-                fscanf(text_input, "%d", &value);
-                printf(" is: |%d|\n", value);
-                value = htons(value);
-                
-                if ((value > 65000) || (value < 0)){
-                    printf("Error in Text-file. Omorfine must be from 0-65000. Exiting.\n");
-                    exit_clean(pcap_out, text_input);
-                }else {
-                    // Reset for next array
-                    func_status->omor = value;
-                    *next_word = 0;
-                    
-                    // process the array defined by the type processed earlier.
-                    break;
-                }
-        } if (*next_word > 3 || *next_word < 0) {
-            printf("Error in Text-file. Format for Status lines incorrect. Exiting.\n");
-            exit_clean(pcap_out, text_input);
-        }
-    }
-    
 /////// COMMAND INSTRUCTIONS ////////////////////
-    if (*section == 2){
+    if (*section == 1){
         value = -1;
         
         // Scan for Command number
-        fscanf(text_input, "%d", &value);
+        fscanf(text_input, "(%d)", &value);
         
-        if (value >= 0){
             printf("CMD is: |%d|\n", value);
             func_cmd->outgoing = value;
-        } else {
+        
+        /*} else {
             printf("Error in Text-file. Format for Paramater incorrect. Exiting.\n");
             exit_clean(pcap_out, text_input);
-        }
+        }*/
         
         // reset for Param
         value = -1;
@@ -370,6 +290,82 @@ int check_set_value(int *section, int *next_word, FILE *text_input, FILE *pcap_o
             memset(&func_cmd->param, '\0', sizeof(func_cmd->param));
         }
         
+    }
+
+    /////// DEVICE_STATUS ////////////////////
+    if (*section == 2) {
+        // Follows these four in order unless error found.
+        switch (*next_word){
+                
+                // BATTERY_STATUS
+            case 0:
+                // Get, store, and then display battery status from union battery
+                fscanf(text_input, ": is  |%lf|\n", &func_status->battery);
+                printf(": is %f", (func_status->battery)/100);
+                /*
+                 if ((func_status->battery / 100) < 0 || (func_status->battery / 100) > 100){
+                 printf("Error in Text-file. Sequence must be from 0-9999. Exiting.\n");
+                 exit_clean(pcap_out, text_input);
+                 }else {
+                 */
+                // Set for next array to process
+                *next_word = 1;
+                
+                break;
+                //}
+                
+                // GLUCOSE_STATUS
+            case 1:
+                fscanf(text_input, "%d", &value);
+                printf(" is: |%d|\n", value);
+                
+                if ((value > 65000) || (value < 0)){
+                    printf("Error in Text-file. Glucose must be set in the range of 0-65000. Exiting.\n");
+                    exit_clean(pcap_out, text_input);
+                } else {
+                    // Reset for next array
+                    
+                    func_status->gluc = value;
+                    *next_word = 2;
+                    // process the array defined by the type processed earlier.
+                    break;
+                }
+                
+                // CAPSACIAN_STATUS
+            case 2:
+                fscanf(text_input, "%d", &value);
+                printf(" is: |%d|\n", value);
+                
+                if ((value > 65000) || (value < 0)){
+                    printf("Error in Text-file. Capsacian must be set in the range of 0-65000. Exiting.\n");
+                    exit_clean(pcap_out, text_input);
+                }else {
+                    // Reset for next array
+                    func_status->caps = value;
+                    *next_word = 3;
+                    break;
+                }
+                
+                // OMORFINE_STATUS
+            case 3:
+                fscanf(text_input, "%d", &value);
+                printf(" is: |%d|\n", value);
+                
+                if ((value > 65000) || (value < 0)){
+                    printf("Error in Text-file. Omorfine must be from 0-65000. Exiting.\n");
+                    exit_clean(pcap_out, text_input);
+                }else {
+                    // Reset for next array
+                    func_status->omor = value;
+                    *next_word = 0;
+                    
+                    // process the array defined by the type processed earlier.
+                    break;
+                }
+        } if (*next_word > 3 || *next_word < 0) {
+            printf("Error in Text-file. Format for Status lines incorrect. Exiting.\n");
+            exit_clean(pcap_out, text_input);
+        }
     }
     
 /////////// GPS DATA ////////////////////
@@ -413,6 +409,10 @@ int check_set_value(int *section, int *next_word, FILE *text_input, FILE *pcap_o
     }
     
     // Go past new-line.
+    if (feof(text_input)){
+        printf("TextFile Completely Read.\n", arg[1]);
+        exit_clean(pcap_out, text_input);
+    };
     fscanf(text_input, "%42[^\n]", (char*)NULL);
     fseek(text_input, sizeof(char), SEEK_CUR);
     
